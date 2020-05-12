@@ -8,15 +8,16 @@ if(file_exists('modelo/php_conexion.php')){
  */
 class PageConstruct extends html_estruct_class{
     
-    public  $dataClient;
     public  $path;
+    public  $dataClient;    
     public  $dataTheme;
+    public  $dataPage;
     public  $obCon;
     /**
      * constructor de la clase 
      * @param type $client_id -> id del cliente
      */
-    function __construct($client_id){
+    function __construct($client_id,$page_id=1){
         $this->path="";
         $arrayPath= explode("/", $_SERVER['REQUEST_URI']);
         if(isset($arrayPath[2])){
@@ -29,10 +30,10 @@ class PageConstruct extends html_estruct_class{
         }
         $this->obCon=new conexion($client_id);
         $this->client_id=$client_id;      
-        $dataClient=$this->obCon->DevuelveValores("clients", "id", $client_id);
-        $dataTheme=$this->obCon->DevuelveValores("html_css_themes", "id", $dataClient["theme_id"]);
-        $this->dataClient=$dataClient;
-        $this->dataTheme=$dataTheme;
+        $this->dataClient=$this->obCon->DevuelveValores("clients", "id", $client_id);
+        $this->dataTheme=$this->obCon->DevuelveValores("html_css_themes", "id", $this->dataClient["theme_id"]);
+        $this->dataPage=$this->obCon->DevuelveValores("pages", "id", $page_id);
+                
         
     }  
     
@@ -87,7 +88,8 @@ class PageConstruct extends html_estruct_class{
                     <!-- Custom Main Stylesheet CSS -->
                     <link rel="stylesheet" href="'.$this->path.'dist/css/style.css">';
                     if(isset($this->dataTheme["css"]) and $this->dataTheme["css"]<>''){
-                        $html.='<link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
+                        $html.='
+                                <link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
                     }
                     
                 $html.='
@@ -96,8 +98,8 @@ class PageConstruct extends html_estruct_class{
     }
     
     public function get_headerGeneral() {
-        $urlLogo=$this->path."/clients/".$this->dataClient["id"]."/images/logo-header.png";
-        return('<header id="header" class="header-light">
+        $urlLogo=$this->path."clients/".$this->dataClient["id"]."/images/logo-header.png";
+        return('<header id="header" class="header-'.$this->dataClient["header_class"].'">
             <div class="layer-stretch hdr">
                 <div class="tbl animated fadeInDown">
                     <div class="tbl-row">
@@ -377,47 +379,9 @@ class PageConstruct extends html_estruct_class{
                                         </li> 
                                     </ul>
                                 </li>
-                                <li class="menu-megamenu-li">
-                                    <a class="mdl-button mdl-js-button mdl-js-ripple-effect hdr-basket" href="#"><i class="fa fa-cart-plus"></i><span class="cart-count">2</span></a>
-                                    <ul class="menu-megamenu menu-cart">
-                                        <li class="cart-overview">
-                                            <a href="#" class="row">
-                                                <div class="col-4 pr-0 cart-img">
-                                                    <img src="uploads/shop-11.jpg" alt="">
-                                                </div>
-                                                <div class="col-8 cart-details">
-                                                    <span class="title">Canvas Backpack</span>
-                                                    <span class="price">$39</span>
-                                                    <span class="qty">Quantity - 3</span>
-                                                    <div class="cart-remove"><i class="icon-close"></i></div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li class="cart-overview">
-                                            <a href="#" class="row">
-                                                <div class="col-4 pr-0 cart-img">
-                                                    <img src="uploads/shop-31.jpg" alt="">
-                                                </div>
-                                                <div class="col-8 cart-details">
-                                                    <span class="title">Leather Wallet</span>
-                                                    <span class="price">$49</span>
-                                                    <span class="qty">Quantity - 3</span>
-                                                    <div class="cart-remove"><i class="icon-close"></i></div>
-                                                </div>
-                                            </a>
-                                        </li>
-                                        <li class="row align-items-center">
-                                            <div class="col-6">
-                                                <a href="#" class="btn btn-dark text-white text-center">Checkout</a>
-                                            </div>
-                                            <div class="col-6 text-right">
-                                                <p class="font-dosis font-20 m-0">Total : $98</p>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </li>
+                                
                                 <li>
-                                    <a class="mdl-button mdl-js-button mdl-js-ripple-effect hdr-search" href="#"><i class="fa fa-search"></i></a>
+                                    <a class="mdl-button mdl-js-button mdl-js-ripple-effect hdr-search" href="#"><i class="icon-login"></i></a>
                                 </li>
                                 <li class="mobile-menu-close"><i class="fa fa-times"></i></li>
                             </ul><!-- End Menu Section -->
@@ -425,17 +389,41 @@ class PageConstruct extends html_estruct_class{
                         </div>
                     </div>
                 </div>
-                <div class="search-bar animated zoomIn">
-                    <div class="search-content">
-                        <div class="search-input">
-                            <input type="text" placeholder="Enter your text ....">
-                            <button class="search-btn"><i class="icon-magnifier"></i></button>
-                        </div>
-                    </div>
-                    <div class="search-close"><i class="icon-close"></i></div>
-                </div>
+                
             </div>
         </header><!-- End Header Section -->');
+    }
+    
+    public function get_slider($page_id) {
+        $dataSliders=$this->obCon->DevuelveValores("clients_slider", "client_id", $this->dataClient["id"]);
+        $dataPage=$this->obCon->DevuelveValores("pages", "id", $page_id);
+        $html="";
+        switch ($dataPage["id"]){
+            case 1://slider para la pagina 1 E-Comerce
+                $html.='<div id="slider" class="slider-transparent slider-half">
+                    <div class="flexslider slider-wrapper">
+                        <ul class="slides">
+                            <li>
+                                <div class="slider-backgroung-image" style="background-image: url('.$this->path.'clients/'.$this->dataClient["id"].'/images/slider1.jpg);">
+
+                                    <div class="layer-stretch">
+                                        <div class="slider-info">
+                                            <h1 style="'.$dataSliders["style_text"].'">'.utf8_encode($dataSliders["title"]).'</h1>
+                                            <p style="'.$dataSliders["style_text"].'">'.utf8_encode($dataSliders["paragraph"]).'</p>
+                                            <div class="slider-button">
+                                                <a id="'.$dataSliders["button_id"].'" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill">'.utf8_encode($dataSliders["button_value"]).'</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div><!-- End Slider Section -->';
+            break;    
+        }
+        return($html);
+        
     }
     
     /**
@@ -599,17 +587,6 @@ class PageConstruct extends html_estruct_class{
                     </footer><!-- End of Footer Section -->');
     }
     
-    public function get_header1() {
-        return('<!-- Start Page Title Section -->
-        <div class="page-ttl page-light">
-            <div class="layer-stretch">
-                <div class="page-ttl-container">
-                    <h1>Page <span class="text-primary">Header</span> 1</h1>
-                    <p><a href="#">Home</a> &#8594; <span>Page Header</span></p>
-                </div>
-            </div>
-        </div><!-- End Page Title Section -->');
-    }
     
     /**
      * Dibuja el inicio de la pagina
@@ -623,10 +600,14 @@ class PageConstruct extends html_estruct_class{
         $favicon="clients/".$this->dataClient["id"].'/images/favicon.png';
         $html.= $this->get_heads($this->dataClient["title"],$keywords,$favicon);
         $html.="<body>";
-        $html.='<div class="wrapper">';       
-        $html.=$this->get_headerGeneral(); 
-        $html.=$this->get_header1();   
-        $html.='<div id="divContentTS6" >'; 
+        $html.='<div class="wrapper">';
+        if($this->dataPage["header_enabled"]==1){
+            $html.=$this->get_headerGeneral(); 
+        }
+        
+        $html.='<div id="divContentTS6" >';
+        $html.=$this->get_slider(1);
+        
         print($html);
     }
     
