@@ -1,0 +1,33 @@
+/* [ BUTTON UP ] */
+.btnupper {
+  position: fixed;
+  bottom: 10%;
+  right: 0;
+  width: 160px;
+  z-index: 11; }
+
+.btnupper-handle {
+  position: absolute;
+  top: 0;
+  left: -60px;
+  background: #FFF;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px; }
+  .btnupper-handle .fa {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    font-size: 40px;
+    color: yellowgreen;
+    box-shadow: -9px 6px 10px 0 #33333385;
+    cursor: pointer; }
+
+.btnupper-wrapper {
+  position: absolute;
+  top: 0;
+  right: -164px;
+  width: 160px;
+  background: #FFF;
+  box-shadow: 0 6px 10px 0 rgba(51, 51, 51, 0.52);
+  transition: all .7s; }

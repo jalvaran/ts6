@@ -47,19 +47,12 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             
         break;//Fin caso 1
         
-        case 2://Dibuje las secciones de la pagina
-            
-            $css =  new PageConstruct($client_id);
-            $client_db=$css->dataClient["db"];
-            $page_id=$obCon->normalizar($_REQUEST["page_id"]);            
-            $sql="SELECT * FROM clients_has_sections WHERE client_id='$client_id' AND page_id='$page_id' AND status_section=1 ORDER BY order_section,id ASC";
-            $query=$obCon->Query($sql);
-            while($dataSection=$obCon->FetchAssoc($query)){
-                $section_id=$dataSection["pages_sections_id"];
-                $sql="SELECT text_content FROM web_sections_content WHERE section_id='$section_id'";
-                $dataHtml=$obCon->FetchAssoc($obCon->QueryExterno($sql, HOST, USER, PW, $client_db, ""));
-                print(utf8_encode($dataHtml["text_content"]));
-            }
+        case 2://Dibuje los sliders y secciones de una pagina
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            $page_id=$obCon->normalizar($_REQUEST["page_id"]); 
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]);      
+            $css =  new PageConstruct($local_id,$page_id,$path);
+            print($css->get_contentPage());
         break;//Fin caso 2 
           
         

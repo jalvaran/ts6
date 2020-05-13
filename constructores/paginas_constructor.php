@@ -17,15 +17,17 @@ class PageConstruct extends html_estruct_class{
      * constructor de la clase 
      * @param type $client_id -> id del cliente
      */
-    function __construct($client_id,$page_id=1){
-        $this->path="";
-        $arrayPath= explode("/", $_SERVER['REQUEST_URI']);
-        if(isset($arrayPath[2])){
-            for($i=3;$i<(count($arrayPath));$i++){
-                $this->path.="../";
+    function __construct($client_id,$page_id=1,$path=""){
+        if($path==""){
+            $arrayPath= explode("/", $_SERVER['REQUEST_URI']);
+            if(isset($arrayPath[1])){
+                for($i=3;$i<(count($arrayPath));$i++){
+                    $this->path.="../";
+                }
             }
+        }else{
+            $this->path.=$path;
         }
-        
         if($client_id==""){
             $client_id=1;
         }
@@ -87,7 +89,9 @@ class PageConstruct extends html_estruct_class{
                     <!-- Flex Slider Stylesheet CSS -->
                     <link rel="stylesheet" href="'.$this->path.'assets/plugin/flexslider/flexslider.min.css" />
                     <!-- Sweetalert CSS -->
-                    <link rel="stylesheet" href="'.$this->path.'assets/plugin/sweetalert/sweetalert.css" />    
+                    <link rel="stylesheet" href="'.$this->path.'assets/plugin/sweetalert/sweetalert.css" /> 
+                        <!-- Custom Main Stylesheet CSS -->
+                    <link rel="stylesheet" href="'.$this->path.'dist/css/ts-style.css">
                     <!-- Custom Main Stylesheet CSS -->
                     <link rel="stylesheet" href="'.$this->path.'dist/css/style.css">';
                     if(isset($this->dataTheme["css"]) and $this->dataTheme["css"]<>''){
@@ -149,20 +153,22 @@ class PageConstruct extends html_estruct_class{
         $dataSliders=$this->obCon->DevuelveValores("clients_slider", "client_id", $this->dataClient["id"]);
         $dataPage=$this->obCon->DevuelveValores("pages", "id", $page_id);
         $html="";
-        switch ($dataPage["id"]){
+        $background_image=$this->path.'clients/'.$this->dataClient["id"].'/images/slider1.jpg';
+        //print($background_image);
+        switch ($dataPage["slider_id"]){
             case 1://slider para la pagina 1 E-Comerce
                 $html.='<div id="slider" class="slider-transparent slider-half">
                     <div class="flexslider slider-wrapper">
                         <ul class="slides">
                             <li>
-                                <div class="slider-backgroung-image" style="background-image: url('.$this->path.'clients/'.$this->dataClient["id"].'/images/slider1.jpg);">
+                                <div class="slider-backgroung-image" style="background-image: url('.$background_image.');">
 
                                     <div class="layer-stretch">
                                         <div class="slider-info">
                                             <h1 style="'.$dataSliders["style_text"].'">'.utf8_encode($dataSliders["title"]).'</h1>
                                             <p style="'.$dataSliders["style_text"].'">'.utf8_encode($dataSliders["paragraph"]).'</p>
                                             <div class="slider-button">
-                                                <a id="'.$dataSliders["button_id"].'" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill">'.utf8_encode($dataSliders["button_value"]).'</a>
+                                                <a id="'.$dataSliders["button_id"].'" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill ts_menu" data-page_id="'.$dataSliders["page_id"].'">'.utf8_encode($dataSliders["button_value"]).'</a>
                                             </div>
                                         </div>
                                     </div>
@@ -171,7 +177,33 @@ class PageConstruct extends html_estruct_class{
                         </ul>
                     </div>
                 </div><!-- End Slider Section -->';
-            break;    
+            break; //Fin caso 1
+            
+            case 2://slider 2
+                $html.='<!-- Start Slider Section -->
+        <div id="slider" class="slider-dark slider-colored slider-half">
+            <div class="flexslider slider-wrapper">
+                <ul class="slides">
+                    <li>
+                        <div class="slider-backgroung-image" style="background-image: url('.$this->path.'clients/'.$this->dataClient["id"].'/images/slider1.jpg);">
+                            <div class="layer-stretch">
+                                <div class="slider-info">
+                                    <h1>Your Identity. Our Responsibility</h1>
+                                    <p class="animated fadeInDown">We have created 80+ Pages, 300+ Components or Shortcodes, Popup for this template and more in future. #twitterhash, @facebooktag</p>
+                                    <div class="slider-button">
+                                        <a class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill">Explore More</a>
+                                    </div>
+                                </div>
+                                <div class="slider-bnnr">
+                                    <img src="uploads/banner-1.png" alt="">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>';
+            break;  //Fin caso 2
+        
         }
         return($html);
         
@@ -217,7 +249,9 @@ class PageConstruct extends html_estruct_class{
                     <!-- Sweetalert Plugin -->
                 <script src="'.$this->path.'modules/main/jsPages/pages.js"></script>
                 <!--Custom JavaScript-->
-                <script src="'.$this->path.'dist/js/custom.js"></script>');
+                <script src="'.$this->path.'dist/js/custom.js"></script>
+                
+                ');
     }
     
     
@@ -357,10 +391,16 @@ class PageConstruct extends html_estruct_class{
         if($this->dataPage["header_enabled"]==1){
             $html.=$this->get_headerGeneral(); 
         }
+        $html.='<div id="divDrawPage">';
         
         $html.=$this->get_slider(); 
         
         $html.='<div id="divDrawSections">';
+        
+        $html.= $this->get_sections();
+        
+        $html.='</div>';
+        
         $html.='</div>';
         $html.=$this->get_footer();
         
@@ -369,7 +409,36 @@ class PageConstruct extends html_estruct_class{
         $html.=$this->get_JSGeneral();
         return($html);
     }
-   
+    
+    public function get_sections() {
+        $sql="SELECT * FROM clients_has_sections WHERE client_id='".$this->dataClient["id"]."' AND page_id='".$this->dataPage["id"]."' AND status_section=1 ORDER BY order_section,id ASC";
+        $query=$this->obCon->Query($sql);
+        $html="";
+        while($dataSection=$this->obCon->FetchAssoc($query)){
+            $section_id=$dataSection["pages_sections_id"];
+            $sql="SELECT text_content FROM web_sections_content WHERE section_id='$section_id'";
+            $dataHtml=$this->obCon->FetchAssoc($this->obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], ""));
+            $html.=utf8_encode($dataHtml["text_content"]);
+        }
+        return($html);
+    }
+    
+    public function get_contentPage() {
+        $html='<div id="divDrawPage">';
+        
+        $html.=$this->get_slider(); 
+        
+        $html.='<div id="divDrawSections">';
+        
+        $html.= $this->get_sections();
+        
+        $html.='</div>';
+        
+        $html.='</div>';
+        
+        return($html);
+    }
+    
     public function addJsModule($jsPage) {
         print('<script src="'.$jsPage.'"></script>');
     }

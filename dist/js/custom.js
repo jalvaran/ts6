@@ -52,11 +52,11 @@
         '</div>' +
         '</div>' +
         '</div>');
-
-    /*$('.color').scrollToFixed({
+        */
+    $('.color').scrollToFixed({
         marginTop: 200
     });
-    */
+    
     $('.setting-handle').click(function () {
         if ($('.setting-wrapper').css('right') === '0px') {
             $('.setting-wrapper').css('right', '-164px');
@@ -174,7 +174,7 @@
     //ResponsiveMenu  *********************************
     //*************************************************
     
-    /*$('.header-light').scrollToFixed({
+    $('.header-light').scrollToFixed({
         preFixed: function () {
             $('.header-light').addClass('hdr-fixed-light');
         },
@@ -208,7 +208,7 @@
         postFixed: function () {
             $('.header-gradient').removeClass('hdr-fixed-gradient');
         }
-    });*/
+    });
 
     $('body').on('click', '#menu-bar', function () {
         var menu = $('.menu');
