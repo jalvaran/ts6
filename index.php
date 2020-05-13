@@ -20,22 +20,40 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
     $router->before('GET', '/.*', function () {
         header('Techno Soluciones SAS');
     });
-    
+    /*
     // Static route: / (homepage)
     $router->get('/', function () {
-       $_SESSION["client_id"]="";
+       
        include_once "modulos/main/main.php";
     });
+     * 
+     */
 
     // Dynamic route: /client/client_id/*
-    $router->get('/client/(.*)', function ($url) {        
+    $router->get('/(.*)', function ($url) {  
+        
         $url= htmlentities($url);
         $arrayUrl= explode("/", $url);
-        $client_id=$arrayUrl[0];
-        $_SESSION["client_id"]=$client_id;        
-        include_once "modulos/main/main.php";
+        foreach ($arrayUrl as $key => $value) {
+            if($value=="local" and isset($arrayUrl[$key+1])){                
+                $_REQUEST["local_id"]=$arrayUrl[$key+1];
+            }            
+            if($value=="product" and isset($arrayUrl[$key+1])){
+                $_REQUEST["product_id"]=$arrayUrl[$key+1];
+            }
+            if($value=="page_id" and isset($arrayUrl[$key+1])){
+                $_REQUEST["page_id"]=$arrayUrl[$key+1];
+            }
+        }
+        $_REQUEST["actionPagesDraw"]=1; //Dibuja la pagina principal  
+        include_once "modules/main/views/pages.draw.php";
+                
     });
-
+     
+    $router->post('/views', function () {       
+        include_once "modules/main/views/pages.draw.php";
+     });
+             
     $router->run();
 
 
