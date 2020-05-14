@@ -45,14 +45,14 @@ var Page=1;
 var local_id=1;
 
 $('.ts_menu').on('click',function () {
-    drawPageContent($(this).data("page_id"));
+    drawPageContent($(this).data("page_id"),$(this).data("local_id"));
     if(terminal_type==2){//Is mobile
         $('.mobile-menu-close').click();
     }
     
 });
     
-function drawPageContent(page_id){
+function drawPageContent(page_id,local_id){
     var idDiv="divDrawPage";
     urlQuery=URLAjax+'views';    
     var form_data = new FormData();
@@ -123,8 +123,7 @@ function spinnerCreate(){
         
     $('body').prepend('<div class="m-2 d-inline-block spinnerloadpage"><div id="loader" class="spinner-4"><div class="bg-info"></div><div class="bg-info"></div><div class="bg-info"></div></div></div>');
     //$('body').prepend('<div class="m-2 d-inline-block spinnerloadpage"><div id="loader" class="spinner-5 info"></div></div>');
-    $('#loader').fadeOut();
-    
+    $('#loader').fadeOut();    
 
 }
 spinnerCreate();

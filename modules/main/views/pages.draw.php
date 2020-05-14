@@ -41,7 +41,7 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
                 exit();
             }
             print($css->get_page());
-            print("<script>local_id=$client_id;<script>");
+            print("<script>local_id=$local_id;<script>");
             $css->Cbody();
             $css->Chtml();
             
@@ -56,6 +56,7 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             if($page_id==3){//si se solicita la tienda virtual
                 print($css->get_virtual_shop());
             }
+            
             
         break;//Fin caso 2 
         
