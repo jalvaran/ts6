@@ -47,7 +47,7 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
         }
         $_REQUEST["actionPagesDraw"]=1; //Dibuja la pagina principal  
         include_once "modules/main/views/pages.draw.php";
-                
+        
     });
      
     $router->post('/views', function () {       
