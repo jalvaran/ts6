@@ -69,6 +69,12 @@ function drawPageContent(page_id){
         processData: false,
         data: form_data,
         type: 'post', // se especifica que metodo de envio se utilizara normalmente y por seguridad se utiliza el post
+        beforeSend: function() {
+            $('#loader').fadeIn();
+        },
+        complete: function(){
+            $('#loader').fadeOut();
+        },
         success: function(data){            
             document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
             $(".flexslider").flexslider();
@@ -113,4 +119,13 @@ function buttonUpCreate(){
     });
 }
 
+function spinnerCreate(){
+        
+    $('body').prepend('<div class="m-2 d-inline-block spinnerloadpage"><div id="loader" class="spinner-4"><div class="bg-info"></div><div class="bg-info"></div><div class="bg-info"></div></div></div>');
+    //$('body').prepend('<div class="m-2 d-inline-block spinnerloadpage"><div id="loader" class="spinner-5 info"></div></div>');
+    $('#loader').fadeOut();
+    
+
+}
+spinnerCreate();
 buttonUpCreate();

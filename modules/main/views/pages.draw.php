@@ -32,11 +32,11 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             if(isset($_REQUEST["page_id"])){
                 $page_id=$obCon->normalizar($_REQUEST["page_id"]);
             }else{
-                $page_id=1;
+                $page_id=0;
             }
             
             $css =  new PageConstruct($local_id,$page_id);
-            if($css->dataClient["id"]==''){
+            if($css->dataClient["ID"]==''){
                 include_once "pages/404.php";
                 exit();
             }
@@ -51,9 +51,15 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             $path=$obCon->normalizar($_REQUEST["myPath"]);
             $page_id=$obCon->normalizar($_REQUEST["page_id"]); 
             $local_id=$obCon->normalizar($_REQUEST["local_id"]);      
-            $css =  new PageConstruct($local_id,$page_id,$path);
+            $css =  new PageConstruct($local_id,$page_id,$path);            
             print($css->get_contentPage());
+            if($page_id==3){//si se solicita la tienda virtual
+                print($css->get_virtual_shop());
+            }
+            
         break;//Fin caso 2 
+        
+        
           
         
  }
