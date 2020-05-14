@@ -176,7 +176,7 @@ class PageConstruct extends html_estruct_class{
                                             <h1 style="color:white">'.($this->dataClient["Nombre"]).'</h1>
                                             <p style="color:white">'.($this->dataClient["Descripcion"]).'</p>
                                             <div class="slider-button">
-                                                <a id="btn_slider1" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill ts_menu" data-page_id="3">Tienda Virtual</a>
+                                                <a id="btn_slider1" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill ts_menu" data-page_id="3" data-local_id="'.$this->dataClient["ID"].'">Tienda Virtual</a>
                                             </div>
                                         </div>
                                     </div>
@@ -198,7 +198,7 @@ class PageConstruct extends html_estruct_class{
                                             <h1 style="'.$dataSliders["style_text"].'">'.($dataSliders["title"]).'</h1>
                                             <p style="'.$dataSliders["style_text"].'">'.($dataSliders["paragraph"]).'</p>
                                             <div class="slider-button">
-                                                <a id="'.$dataSliders["button_id"].'" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill ts_menu" data-page_id="'.$dataSliders["button_page_id"].'">'.($dataSliders["button_value"]).'</a>
+                                                <a id="'.$dataSliders["button_id"].'" class="mdl-button mdl-js-button mdl-button--raised mdl-button--colored mdl-js-ripple-effect button button-primary button-pill ts_menu" data-page_id="'.$dataSliders["button_page_id"].'" data-local_id="'.$this->dataClient["ID"].'">'.($dataSliders["button_value"]).'</a>
                                             </div>
                                         </div>
                                     </div>
@@ -379,6 +379,9 @@ class PageConstruct extends html_estruct_class{
         $html.='</div>';
         
         $html.='</div>';
+        if($this->dataPage["id"]==3){//si se solicita la tienda virtual
+            $html.=($this->get_virtual_shop());
+        }
         $html.=$this->get_footer();
         
         $html.='</div>'; //end wrapper
@@ -466,37 +469,183 @@ class PageConstruct extends html_estruct_class{
         print('<script src="'.$this->path.$jsPage.'"></script>');
     }
     
-    public function get_search_products() {
-        $html=' 
-            <div class="slider-search">
-                                   
-                                    <div class="slider-search-wrapper">
-                                        <div class="row">
-                                            <div class="col-lg-5 main-input">
-                                                <input type="text" placeholder="What are you looking for?">
-                                            </div>
-                                            <div class="col-lg-3 block main-input">
-                                                <input type="text" placeholder="Location or Area">
-                                            </div>
-                                            <div class="col-lg-2 block main-input">
-                                                <select>
-                                                    <option value="">Select Category</option>
-                                                    <option value="1">Event</option>
-                                                    <option value="2">Travel</option>
-                                                    <option value="3">Hospital</option>
-                                                    <option value="4">Construction</option>
-                                                    <option value="5">Blog</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-lg-2 text-center">
-                                                <button class="btn btn-primary btn-pill submit">Search</button>
-                                            </div> 
-                                            
-                                        </div>
-                                    </div>
-                                </div>';
+       
+    public function get_card_last_product($dataProduct) {
+        $imgProduct=$this->path.str_replace("../", "", $dataProduct["Ruta"]);
+        $html='<li class="row align-items-center">
+                    <div class="col-4 p-0">
+                        <div class="img">
+                            <a href="#"><img src="'.$imgProduct.'" alt=""></a>
+                        </div>
+                    </div>
+                    <div class="col-8">
+                        <h6 class="title"><a href="#">'.ucfirst(strtolower($dataProduct["Nombre"])).'</a></h6>
+                        <div class="price">$'.number_format($dataProduct["PrecioVenta"]).'</div>
+                        <div class="link">
+                            <a><i class="icon-basket" style="font-size:14px;"></i>Agregar al Carro</a>
+                        </div>
+                    </div>
+                </li>';
         return($html);
     }
+    
+    public function get_last_products() {
+        $html='<div class="panel panel-default eventp-sidebar">
+                        <div class="panel-head">
+                            <div class="panel-title">
+                                <span class="panel-title-text">Últimos Productos</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <ul class="widget-product">';
+        $sql="SELECT t1.*,
+                     (SELECT Ruta FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created DESC LIMIT 1 ) as Ruta 
+                 FROM productos_servicios t1 ORDER BY Created DESC LIMIT 10";
+        $query= $this->obCon->QueryExterno($sql, HOST , USER, PW, $this->dataClient["db"], "");
+        while($dataProduct=$this->obCon->FetchAssoc($query)){
+            $html.= $this->get_card_last_product($dataProduct);
+        }
+        
+        $html.='            
+                            </ul>
+                        </div>
+                    </div>';
+        
+        return($html);
+        
+    }
+    
+    public function get_classifications() {
+        $html='<div class="panel-body">
+                  <ul class="category-list">';
+        $sql="SELECT t1.ID,t1.Clasificacion,
+                        (SELECT COUNT(*) FROM productos_servicios t2 WHERE t2.idClasificacion=t1.ID) AS TotalItems 
+                        FROM inventarios_clasificacion t1 WHERE Estado=1";
+                $query= $this->obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], "");
+                while($dataClasified= $this->obCon->FetchAssoc($query)){
+                    $html.='<li><a class="mnu_clasificacion" style="font-size:16px" data-local_id="'.$this->dataClient["ID"].'" data-clasificacion_id="'.$dataClasified["ID"].'"><i class="icon-arrow-right"></i>'.ucfirst(strtolower($dataClasified["Clasificacion"])).'</a><span>('.$dataClasified["TotalItems"].')</span></li>';                               
+                
+                }
+        $html.=' </ul>
+                </div>
+            </div>';
+        
+        return($html);
+    }
+    
+    public function get_card_product($dataProduct) {
+        
+        $arrayImages= explode('|',$dataProduct["Rutas"]);
+        $html='<div class="panel panel-default" >
+                                <div class="panel-head">
+                                    <div class="panel-title">
+                                        <i class="fa fa-bookmark panel-head-icon font-24"></i>
+                                        <span class="panel-title-text" style="font-size:30px;color:black">'.ucfirst(strtolower($dataProduct["Nombre"])).'</span>
+                                    </div>
+                                    <div class="panel-action">
+                                        <a class=""><i class="fa fa-link" style="color:#e30aa1;font-size:24px"></i></a>
+                                        
+                                    </div>  
+                                </div>
+                                <div class="panel-wrapper">
+                                    <div class="panel-body">';
+        
+        $html.='<div class="product-card">
+                            <div class="product-img">
+                                <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">';
+                                
+        foreach ($arrayImages as $key => $imgProduct) {
+            $imgProduct=$this->path.str_replace("../", "", $imgProduct);
+            $html.='<div class="theme-owlslider-container">
+                        <a href="#"><img class="img-responsive" src="'.$imgProduct.'" alt=""></a>
+                    </div>';
+        }    
+                            
+                            
+                            $html.='
+                                </div>
+                            </div>
+                            
+                            <div class="product-details row">
+                                <div class="col-md-4">
+                                    <h5 class="title">'.ucfirst(strtolower($dataProduct["DescripcionCorta"])).'</h5>
+                                    <div class="price" style="font-size:40px;">
+                                        $'.number_format($dataProduct["PrecioVenta"]).'
+                                    </div>
+
+                                </div>
+                                <div class="col-md-8">
+                                    
+                                    <textarea class="form-control" placeholder="Observaciones" style="bottom:0px;position:absolute"></textarea>
+                                </div>
+                            </div>
+                            
+                            
+                        </div>';
+                            
+                            
+        $html.='        <div class="panel-footer">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                        
+                                            <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <button class="btn btn-dark  btn-gradient btn-shadow" style="border-top-left-radius:20%;border-bottom-left-radius:20%; "><i class="far fa-arrow-alt-circle-down" style="font-size:25px;"></i></button>
+                                            </div>
+                                            <input type="number" class="form-control" value=1 style="font-size:25px;text-align:center;-webkit-appearance: textfield !important;margin: 0;-moz-appearance:textfield !important;" min=1 max=100>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-success btn-gradient btn-shadow" style="border-top-right-radius:20%;border-bottom-right-radius:20%; "><i class="far fa-arrow-alt-circle-up" style="font-size:25px;"></i></button>
+                                            </div>
+                                    </div>
+                            </div>
+                            <div class="col-md-6">
+                                
+                                    <button class="form-control btn btn-secondary btn-pill" style="font-size:20px;">Agregar <i class="fab fa-opencart" style=""></i></button>
+
+                                
+                            </div>
+                        </div>
+                         </div>
+                        </div>
+                    </div>
+                </div>';                    
+        return($html);
+    }
+    
+    public function get_list_products() {
+               
+        $sql="SELECT t1.*,
+                     (SELECT (GROUP_CONCAT(Ruta SEPARATOR '|') )  FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created ASC ) as Rutas 
+                 FROM productos_servicios t1 ORDER BY Created DESC LIMIT 10";
+        $query= $this->obCon->QueryExterno($sql, HOST , USER, PW, $this->dataClient["db"], "");
+        
+        $html='<div id="divListProducts" class="row">';
+                
+            while($dataProduct= $this->obCon->FetchAssoc($query)){
+                $html.='<div class="col-md-12">';
+                    $html.= $this->get_card_product($dataProduct);
+                $html.='</div>';
+            }
+            
+        $html.='</div>';
+        
+        return($html);
+    }
+    
+    public function get_search_products() {
+        $html='<div class="row align-items-center shop-filter" style="border-radius:20px;background-color:white">
+                            <div class="col-sm-12">
+                                <div class="search-input">
+                                    <input data-local_id="'.$this->dataClient["ID"].'" type="text" class="searchProducts" placeholder="Buscar....">
+                                    <button class="search-btn"><i class="icon-magnifier"></i></button>
+                                </div>
+                            </div>
+                            
+                        </div>'; 
+        return($html);
+        
+    }
+    
     public function get_virtual_shop() {
         $html="";
         switch ($this->dataClient["virtual_shop"]) {
@@ -511,395 +660,32 @@ class PageConstruct extends html_estruct_class{
                                                     <div class="panel panel-default eventp-sidebar">
                                                         <div class="panel-head">
                                                             <div class="panel-title">
-                                                                <span class="panel-title-text">Categoría de Productos</span>
+                                                                <span class="panel-title-text">Categoría de Productos o Servicios</span>
                                                             </div>
-                                                        </div>';
+                                                        </div>
+                                                        
+                                                                ';
+                                                         
                 
-                $html.='                               <div class="panel-body">
-                                                            <ul class="category-list">
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>News</a><span>(10)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>History</a><span>(20)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>Mythology</a><span>(9)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>Technology</a><span>(21)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>Science</a><span>(13)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>New Disese</a><span>(7)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>Health</a><span>(5)</span></li>
-                                                                <li><a href="#"><i class="icon-arrow-right"></i>wellness</a><span>(8)</span></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default eventp-sidebar">
-                                                        <div class="panel-head">
-                                                            <div class="panel-title">
-                                                                <span class="panel-title-text">Latest Product</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="panel-body">
-                                                            <ul class="widget-product">
-                                                                <li class="row align-items-center">
-                                                                    <div class="col-4 p-0">
-                                                                        <div class="img">
-                                                                            <a href="#"><img src="'.$this->path.'uploads/shop-11.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-8">
-                                                                        <h6 class="title"><a href="#">Canon Camera</a></h6>
-                                                                        <div class="price"><del>79.99</del> $59.99</div>
-                                                                        <div class="link">
-                                                                            <a href="#"><i class="icon-basket"></i>Add to Cart</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li class="row align-items-center">
-                                                                    <div class="col-4 p-0">
-                                                                        <div class="img">
-                                                                            <a href="#"><img src="'.$this->path.'uploads/shop-21.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-8">
-                                                                        <h6 class="title"><a href="#">Multiple Product</a></h6>
-                                                                        <div class="price">$119.99</div>
-                                                                        <div class="link">
-                                                                            <a href="#"><i class="icon-basket"></i>Add to Cart</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li class="row align-items-center">
-                                                                    <div class="col-4 p-0">
-                                                                        <div class="img">
-                                                                            <a href="#"><img src="'.$this->path.'uploads/shop-31.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-8">
-                                                                        <h6 class="title"><a href="#">Leather Wallet</a></h6>
-                                                                        <div class="price">$99.99</div>
-                                                                        <div class="link">
-                                                                            <a href="#"><i class="icon-basket"></i>Add to Cart</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li class="row align-items-center">
-                                                                    <div class="col-4 p-0">
-                                                                        <div class="img">
-                                                                            <a href="#"><img src="'.$this->path.'uploads/shop-51.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-8">
-                                                                        <h6 class="title"><a href="#">Camera</a></h6>
-                                                                        <div class="price">$999.99</div>
-                                                                        <div class="link">
-                                                                            <a href="#"><i class="icon-basket"></i>Add to Cart</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                                <li class="row align-items-center">
-                                                                    <div class="col-4 p-0">
-                                                                        <div class="img">
-                                                                            <a href="#"><img src="'.$this->path.'uploads/shop-61.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="col-8">
-                                                                        <h6 class="title"><a href="#">Apple Watch</a></h6>
-                                                                        <div class="price">$499</div>
-                                                                        <div class="link">
-                                                                            <a href="#"><i class="icon-basket"></i>Add to Cart</a>
-                                                                        </div>
-                                                                    </div>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default eventp-sidebar">
-                                                        <div class="panel-head">
-                                                            <div class="panel-title">
-                                                                <span class="panel-title-text">Featured Product</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="panel-body">
-                                                            <div class="featured-product">
-                                                                <div class="owl-carousel owl-theme theme-owlslider">
-                                                                    <div class="theme-owlslider-container">
-                                                                        <img class="img-responsive" src="'.$this->path.'uploads/shop-11.jpg" alt="">
-                                                                        <h6 class="title"><a href="#">Canon Camera</a></h6>
-                                                                        <div class="price">$499</div>
-                                                                    </div>
-                                                                    <div class="theme-owlslider-container">
-                                                                        <img class="img-responsive" src="'.$this->path.'uploads/shop-21.jpg" alt="">
-                                                                        <h6 class="title"><a href="#">Multiple Product</a></h6>
-                                                                        <div class="price">$499</div>
-                                                                    </div>
-                                                                    <div class="theme-owlslider-container">
-                                                                        <img class="img-responsive" src="'.$this->path.'uploads/shop-31.jpg" alt="">
-                                                                        <h6 class="title"><a href="#">Leather Wallet and Watch</a></h6>
-                                                                        <div class="price">$499</div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="panel panel-default eventp-sidebar">
-                                                        <div class="panel-head">
-                                                            <div class="panel-title">
-                                                                <span class="panel-title-text">Product Tag</span>
-                                                            </div>
-                                                        </div>
-                                                        <div class="panel-body">
-                                                            <div class="product-tag">
-                                                                <div class="tag-list">
-                                                                    <a href="#">Accessories</a>
-                                                                    <a href="#">Branding</a>
-                                                                    <a href="#">Apple</a>
-                                                                    <a href="#">Kids</a>
-                                                                    <a href="#">Wallet</a>
-                                                                    <a href="#">Cloth</a>
-                                                                    <a href="#">Belts</a>
-                                                                    <a href="#">Purse</a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-8">
-                                                    <div class="row align-items-center shop-filter">
-                                                        <div class="col-sm-4">
-                                                            <select class="custom-select">
-                                                                <option>Default sorting</option>
-                                                                <option>Sort by popularity</option>
-                                                                <option>Sort by average ratings</option>
-                                                                <option>Sort by newness</option>
-                                                                <option>Sort by price: low to high</option>
-                                                                <option>Sort by price: high to low</option>
-                                                            </select>
-                                                        </div>
-                                                        <div class="col-sm-8 text-right">
-                                                            <p class="m-0">Showing 1–10 of 55 results</p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-11.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-12.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-13.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Canon Camera</a></h5>
-                                                                    <div class="price">
-                                                                        <del>$79.99</del>$59.99
-                                                                    </div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <a href="#"><img src="'.$this->path.'uploads/shop-21.jpg" alt=""></a>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Shoes, Watch, Belts, T-shirts</a></h5>
-                                                                    <div class="price">
-                                                                        <del>$179.99</del>$159.99
-                                                                    </div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-31.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-32.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Eyeglass, Watch</a></h5>
-                                                                    <div class="price">$29.99</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-41.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-42.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Leather Wallet</a></h5>
-                                                                    <div class="price">$49</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <a href="#"><img src="'.$this->path.'uploads/shop-51.jpg" alt=""></a>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Camera</a></h5>
-                                                                    <div class="price">$99</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-61.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-62.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Watch</a></h5>
-                                                                    <div class="price">$459.99</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-71.jpg" alt=""></a>
-                                                                        </div>
-                                                                        <div class="theme-owlslider-container">
-                                                                            <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-72.jpg" alt=""></a>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Coffee Cup</a></h5>
-                                                                    <div class="price">$9.90</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-6">
-                                                            <div class="product-card">
-                                                                <div class="product-img">
-                                                                    <a href="#"><img class="img-responsive" src="'.$this->path.'uploads/shop-81.jpg" alt=""></a>
-                                                                </div>
-                                                                <div class="product-details">
-                                                                    <h5 class="title"><a href="#">Leather Shoes</a></h5>
-                                                                    <div class="price">$129.90</div>
-                                                                    <div class="rating">
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                        <i class="fa fa-star-o"></i>
-                                                                    </div>
-                                                                    <div>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Add to Cart</a>
-                                                                        <a href="#" class="btn btn-outline btn-dark btn-outline-1x btn-sm m-1">Buy Now</a>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                $html.=$this->get_classifications();
+                
+                $html.= $this->get_last_products();                                   
+                $html.='</div> 
+                        <div class="col-lg-8">';
+                
+                $html.=$this->get_search_products();
+                $html.= $this->get_list_products();                               
+                
+                $html.='</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div><!-- End Page Section -->';
+                
+                                              
+                                              
+                                              
+                                              
             break;//fin caso 1
 
             
