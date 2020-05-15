@@ -55,10 +55,25 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             print($css->get_contentPage());
             if($page_id==3){//si se solicita la tienda virtual
                 print($css->get_virtual_shop());
+               
             }
             
             
         break;//Fin caso 2 
+        
+        case 3://Dibuje mas productos
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            $page=$obCon->normalizar($_REQUEST["page"]); 
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]); 
+            $classification="";
+            $search="";
+            $css =  new PageConstruct($local_id,3,$path);            
+            
+            print($css->get_list_products($page,$classification,$search));
+           
+            
+            
+        break;//Fin caso 3
         
         
           

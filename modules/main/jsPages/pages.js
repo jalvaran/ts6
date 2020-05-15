@@ -79,9 +79,13 @@ function drawPageContent(page_id,local_id){
             document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
             $(".flexslider").flexslider();
             $('#btn_slider1').on('click',function () {
-                drawPageContent($(this).data("page_id")); 
+                drawPageContent($(this).data("page_id"),$(this).data("local_id")); 
             });
             goUpPage();
+            
+            if(page_id==3){
+                add_events_virtual_shop();
+            }
         },
         error: function (xhr, ajaxOptions, thrownError) {// si hay error se ejecuta la funcion
             
@@ -93,7 +97,7 @@ function drawPageContent(page_id,local_id){
 }
 
 function goUpPage(){
-    $("html, body").animate({ scrollTop: 0 }, 600);
+    $("html, body").animate({ scrollTop: $("#searchProducts").offset().top }, 2000);
     return false;
 }
 
@@ -125,6 +129,90 @@ function spinnerCreate(){
     //$('body').prepend('<div class="m-2 d-inline-block spinnerloadpage"><div id="loader" class="spinner-5 info"></div></div>');
     $('#loader').fadeOut();    
 
+}
+function add_events_virtual_shop(){
+   /*
+    $(".ts-gallery").owlCarousel({
+        items: 1,
+        dots: true
+    });
+    
+    $('.ts-gallery').flexslider({
+        animation: "slide",
+        animationLoop: true,
+        pauseOnHover: true
+    });
+          
+    */
+    $('.loadMoreProducts').on('click',function () {
+        drawMoreProducts($(this).data("page"),$(this).data("local_id"));         
+        $(this).remove();
+    });
+    
+    $('.tsResteCantidad').on('click',function () {
+        CambieCantidad($(this).data("text_id"),"-");         
+        
+    });
+    
+    $('.tsSumeCantidad').on('click',function () {
+        CambieCantidad($(this).data("text_id"),"+"); 
+    });
+    
+}
+
+function CambieCantidad(idCaja,operation){
+    
+    var Cantidad=$('#'+idCaja).val();
+    
+    if(operation=='+'){
+        
+        $('#'+idCaja).val(Number($('#'+idCaja).val())+1);
+    }
+    if(operation=='-' && Cantidad>1){
+        $('#'+idCaja).val(Number($('#'+idCaja).val())-1);
+    }
+}
+
+$(document).ready(add_events_virtual_shop);
+
+function drawMoreProducts(page,local_id){
+    var idDiv="divListProducts";
+    urlQuery=URLAjax+'views';    
+    var form_data = new FormData();
+        form_data.append('actionPagesDraw', 3);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
+        form_data.append('page', page);
+        form_data.append('local_id', local_id);
+        form_data.append('myPath', myPath);
+        
+       $.ajax({// se arma un objecto por medio de ajax  
+        url: urlQuery,// se indica donde llegara la informacion del objecto
+        
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post', // se especifica que metodo de envio se utilizara normalmente y por seguridad se utiliza el post
+        beforeSend: function() {
+            $('#loader').fadeIn();
+            //$('.ts-gallery').removeClass('ts-gallery');
+        },
+        complete: function(){
+            $('#loader').fadeOut();
+        },
+        success: function(data){
+            
+            document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
+            
+            add_events_virtual_shop();
+            goUpPage();
+        },
+        error: function (xhr, ajaxOptions, thrownError) {// si hay error se ejecuta la funcion
+            
+            var alertMensanje='<div class="alert alert-danger mt-3"><h4 class="alert-heading">Error!</h4><p>Parece que no hay conexión con el servidor.</p><hr><p class="mb-0">Intentalo de nuevo.</p></div>';
+            document.getElementById(idDiv).innerHTML=alertMensanje;
+            swal("Error de Conexión");
+          }
+      });
 }
 spinnerCreate();
 buttonUpCreate();
