@@ -533,6 +533,85 @@ class PageConstruct extends html_estruct_class{
         return($html);
     }
     
+    public function get_slider_product() {
+        
+        $html='<div class="flexslider thumbnail-slider">
+                                
+                            <div class="flex-viewport" style="overflow: hidden; position: relative;">
+                                <ul class="slides" style="width: 1000%; transition-duration: 0.6s; transform: translate3d(-900px, 0px, 0px);">
+                                    <li data-thumb="'.$this->path.'uploads/shop-13.jpg" class="clone" aria-hidden="true" style="width: 450px; margin-right: 0px; float: left; display: block;">
+                                        <img src="'.$this->path.'uploads/shop-13.jpg" alt="" draggable="false">
+                                    </li>
+                                    <li data-thumb="'.$this->path.'uploads/shop-11.jpg" style="width: 450px; margin-right: 0px; float: left; display: block;" class="" data-thumb-alt="">
+                                        <img src="'.$this->path.'uploads/shop-11.jpg" alt="" draggable="false">
+                                    </li>
+                                    <li data-thumb="'.$this->path.'uploads/shop-12.jpg" data-thumb-alt="" style="width: 450px; margin-right: 0px; float: left; display: block;" class="flex-active-slide">
+                                        <img src="'.$this->path.'uploads/shop-12.jpg" alt="" draggable="false">
+                                    </li>
+                                    <li data-thumb="'.$this->path.'uploads/shop-13.jpg" data-thumb-alt="" style="width: 450px; margin-right: 0px; float: left; display: block;" class="">
+                                        <img src="'.$this->path.'uploads/shop-13.jpg" alt="" draggable="false">
+                                    </li>
+                                    <li data-thumb="'.$this->path.'uploads/shop-11.jpg" style="width: 450px; margin-right: 0px; float: left; display: block;" class="clone" aria-hidden="true">
+                                        <img src="'.$this->path.'uploads/shop-11.jpg" alt="" draggable="false">
+                                    </li>
+                                </ul>
+                            </div>
+                            <ul class="flex-control-nav flex-control-thumbs">
+                                <li><img src="'.$this->path.'uploads/shop-11.jpg" class="" draggable="false"></li>
+                                <li><img src="'.$this->path.'uploads/shop-12.jpg" draggable="false" class="flex-active"></li>
+                                <li><img src="'.$this->path.'uploads/shop-13.jpg" draggable="false" class=""></li>
+                           </ul>
+                           <ul class="flex-direction-nav">
+                                <li class="flex-nav-prev"><a class="flex-prev" href="#">Anterior</a></li>
+                                <li class="flex-nav-next"><a class="flex-next" href="#">Siguiente</a></li>
+                            </ul>
+                        </div>';
+    
+        return($html);
+        
+    }
+    
+    public function get_carousel_1($id,$arrayImages) {
+        $htmlImages="";
+        $html='<main><div class="container">
+                <div class="carousel slide" id="main-carousel" data-ride="carousel" >';
+            $html.='<ol class="carousel-indicators">';
+                foreach ($arrayImages as $key => $imgProduct) {
+                    $imgProduct=$this->path.str_replace("../", "", $imgProduct);
+                    $actived="";
+                    if($key==0){
+                        $actived='active';
+                    }
+                    $html.='<li data-target="#'.$id.'" data-slide-to="'.$key.'" class="'.$actived.'"></li>';
+                    $htmlImages.='<div class="carousel-item '.$actived.'">
+					<img class="d-block img-fluid" src="'.$imgProduct.'" alt="">
+					
+				</div>';
+                }
+            $html.='</ol><!-- /.carousel-indicators -->';
+            
+            $html.='<div class="carousel-inner">';
+                $html.=$htmlImages;
+            
+            $html.='</div><!-- /.carousel-inner -->
+			
+                            <a href="#'.$id.'" class="carousel-control-prev" data-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                    <span class="sr-only" aria-hidden="true">Anterior</span>
+                            </a>
+                            <a href="#'.$id.'" class="carousel-control-next" data-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                    <span class="sr-only" aria-hidden="true">Siguiente</span>
+                            </a>
+                    </div><!-- /.carousel -->
+                </div><!-- /.container -->
+                
+            </main>    
+            ';    
+            return($html);
+                
+    }
+    
     public function get_card_product($dataProduct) {
         
         $arrayImages= explode('|',$dataProduct["Rutas"]);
@@ -550,21 +629,36 @@ class PageConstruct extends html_estruct_class{
                                 <div class="panel-wrapper">
                                     <div class="panel-body">';
         
+        
+      
         $html.='<div class="product-card">
-                            <div class="product-img">
-                                <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center">';
-                                
+                            ';
+         $imgProduct=$this->path.str_replace("../", "", $arrayImages["0"]);
+         $html.='
+                    <img src="'.$imgProduct.'" style="box-shadow: 0 0 30px #000000;width:100%;border-top-right-radius:25%;border-bottom-left-radius:25%;">
+                    
+                    </img>
+                ';
+        //$html.=$this->get_carousel_1("cr_".$dataProduct["ID"], $arrayImages);
+        /*
+        $html.='<div class="product-img">
+                                <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center ts-gallery">';
         foreach ($arrayImages as $key => $imgProduct) {
             $imgProduct=$this->path.str_replace("../", "", $imgProduct);
-            $html.='<div class="theme-owlslider-container">
-                        <a href="#"><img class="img-responsive" src="'.$imgProduct.'" alt=""></a>
+            
+            $html.='<div class="theme-owlslider-container ts-gallery">
+                        <img class="img-responsive" src="'.$imgProduct.'" alt="">
                     </div>';
-        }    
-                            
+        }   
+        $html.='
+                                </div>
+                            </div>';  
+         * 
+         */
+                    
                             
                             $html.='
-                                </div>
-                            </div>
+                                
                             
                             <div class="product-details row">
                                 <div class="col-md-4">
@@ -589,18 +683,18 @@ class PageConstruct extends html_estruct_class{
                                         <div class="col-md-6">
                                         
                                             <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <button class="btn btn-dark  btn-gradient btn-shadow" style="border-top-left-radius:20%;border-bottom-left-radius:20%; "><i class="far fa-arrow-alt-circle-down" style="font-size:25px;"></i></button>
+                                                <div class="input-group-prepend">
+                                                    <button class="btn btn-dark  btn-gradient btn-shadow tsResteCantidad" data-text_id="Cantidad_'.$dataProduct["ID"].'" style="border-top-left-radius:20%;border-bottom-left-radius:20%; "><i class="far fa-arrow-alt-circle-down" style="font-size:25px;"></i></button>
+                                                </div>
+                                                <input type="number" id="Cantidad_'.$dataProduct["ID"].'" class="form-control" value=1 style="font-size:25px;text-align:center;-webkit-appearance: textfield !important;margin: 0;-moz-appearance:textfield !important;" min=1 max=100>
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-success btn-gradient btn-shadow tsSumeCantidad" data-text_id="Cantidad_'.$dataProduct["ID"].'" style="border-top-right-radius:20%;border-bottom-right-radius:20%; "><i class="far fa-arrow-alt-circle-up" style="font-size:25px;"></i></button>
+                                                </div>
                                             </div>
-                                            <input type="number" class="form-control" value=1 style="font-size:25px;text-align:center;-webkit-appearance: textfield !important;margin: 0;-moz-appearance:textfield !important;" min=1 max=100>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-success btn-gradient btn-shadow" style="border-top-right-radius:20%;border-bottom-right-radius:20%; "><i class="far fa-arrow-alt-circle-up" style="font-size:25px;"></i></button>
-                                            </div>
-                                    </div>
-                            </div>
+                                        </div>
                             <div class="col-md-6">
                                 
-                                    <button class="form-control btn btn-secondary btn-pill" style="font-size:20px;">Agregar <i class="fab fa-opencart" style=""></i></button>
+                                    <button class="form-control btn btn-secondary btn-pill" style="font-size:20px;" data-product_id="'.$dataProduct["ID"].'" data-local_id="'.$this->dataClient["ID"].'" >Agregar <i class="fab fa-opencart" style=""></i></button>
 
                                 
                             </div>
@@ -612,11 +706,29 @@ class PageConstruct extends html_estruct_class{
         return($html);
     }
     
-    public function get_list_products() {
-               
+    public function get_list_products($page=1,$classification="",$search="") {
+        $limit=20;
+        $condition=" WHERE Estado=1 ";
+        if($classification<>''){
+            $condition.=" AND idt1.Estado=1Clasificacion='$classification'";
+        }
+        if($search<>''){
+            $condition.=" AND Nombre like '%$search%'";
+        }
+        
+        $sql="SELECT COUNT(ID) as Items FROM productos_servicios $condition"; 
+        $query=$this->obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], "");
+        $dataTotals = $this->obCon->FetchAssoc($query);
+        $totals = $dataTotals['Items'];
+        $totalPages= ceil($totals/$limit);
+        if($page>$totalPages and $totalPages<>0){
+            return;
+        }
+        $init_point = ($page * $limit) - $limit;
+        
         $sql="SELECT t1.*,
                      (SELECT (GROUP_CONCAT(Ruta SEPARATOR '|') )  FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created ASC ) as Rutas 
-                 FROM productos_servicios t1 ORDER BY Created DESC LIMIT 10";
+                 FROM productos_servicios t1 $condition ORDER BY Created DESC LIMIT $init_point,$limit;";
         $query= $this->obCon->QueryExterno($sql, HOST , USER, PW, $this->dataClient["db"], "");
         
         $html='<div id="divListProducts" class="row">';
@@ -627,8 +739,42 @@ class PageConstruct extends html_estruct_class{
                 $html.='</div>';
             }
             
-        $html.='</div>';
         
+        if($totals>$limit){
+            $html.='<div class="col-md-12">';
+                $html.='<div class="input-group">
+                        <div class="input-group-prepend">';
+                
+                if($page<>1){
+                    $html.='<button class=" from-control btn btn-primary  btn-gradient btn-shadow loadMoreProducts" style="border-top-left-radius:2%;border-bottom-left-radius:2%; font-size:20px; width:150px;" data-page="'.($page-1).'" data-local_id="'.$this->dataClient["ID"].'"><i class="far fa-arrow-alt-circle-left" style="font-size:25px;"></i> Atrás</button>';
+                }
+                
+                $html.='</div>
+                        <input class="form-control input-group-prepend" disabled></input>
+                        <div class="input-group-prepend">';
+                
+                if($page<>$totalPages){
+                    $html.='<button  class="from-control btn btn-info btn-gradient btn-shadow loadMoreProducts" style="border-top-right-radius:2%;border-bottom-right-radius:2%;font-size:20px;width:150px; " data-page="'.($page+1).'" data-local_id="'.$this->dataClient["ID"].'" >Siguiente <i class="far fa-arrow-alt-circle-right" style="font-size:25px;"></i></button>';
+                
+                }
+                
+                $html.='</div>
+                    </div>';
+            
+            //$html.='<button class="form-control btn btn-primary loadMoreProducts" data-page="'.($page+1).'" data-local_id="'.$this->dataClient["ID"].'" style="font-size:20px;">Muéstrame Más...</button>';
+            $html.="</div>";     
+        }else{
+            $html.='<div class="alert alert-outline alert-icon alert-success alert-dismissible fade show" role="alert">
+                        <div class="alert--icon">
+                            <i class="fa fa-check"></i>
+                        </div>
+                        <div class="alert-text">
+                            <strong>Bien!</strong> Se han cargado todos los productos!
+                        </div>
+                        
+                    </div>';
+        }
+        $html.='</div>';
         return($html);
     }
     
@@ -636,7 +782,7 @@ class PageConstruct extends html_estruct_class{
         $html='<div class="row align-items-center shop-filter" style="border-radius:20px;background-color:white">
                             <div class="col-sm-12">
                                 <div class="search-input">
-                                    <input data-local_id="'.$this->dataClient["ID"].'" type="text" class="searchProducts" placeholder="Buscar....">
+                                    <input id="searchProducts" data-local_id="'.$this->dataClient["ID"].'" type="text" class="searchProducts" placeholder="Buscar....">
                                     <button class="search-btn"><i class="icon-magnifier"></i></button>
                                 </div>
                             </div>
