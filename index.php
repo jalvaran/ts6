@@ -53,6 +53,10 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
     $router->post('/views', function () {       
         include_once "modules/main/views/pages.draw.php";
      });
+     
+     $router->post('/process', function () {       
+        include_once "modules/main/process/shopping.process.php";
+     });
              
     $router->run();
 
