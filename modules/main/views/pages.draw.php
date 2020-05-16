@@ -51,7 +51,8 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             $path=$obCon->normalizar($_REQUEST["myPath"]);
             $page_id=$obCon->normalizar($_REQUEST["page_id"]); 
             $local_id=$obCon->normalizar($_REQUEST["local_id"]);      
-            $css =  new PageConstruct($local_id,$page_id,$path);            
+            $css =  new PageConstruct($local_id,$page_id,$path);
+            
             print($css->get_contentPage());
             if($page_id==3){//si se solicita la tienda virtual
                 print($css->get_virtual_shop());
@@ -65,8 +66,8 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             $path=$obCon->normalizar($_REQUEST["myPath"]);
             $page=$obCon->normalizar($_REQUEST["page"]); 
             $local_id=$obCon->normalizar($_REQUEST["local_id"]); 
-            $classification="";
-            $search="";
+            $classification=$obCon->normalizar($_REQUEST["category"]); 
+            $search=$obCon->normalizar($_REQUEST["search_product"]); 
             $css =  new PageConstruct($local_id,3,$path);            
             
             print($css->get_list_products($page,$classification,$search));
@@ -74,6 +75,17 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             
             
         break;//Fin caso 3
+    
+        case 4://Dibuja el slider de un producto
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            $dataProduct=$obCon->normalizar($_REQUEST["dataProduct"]);
+            
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]);            
+            $css =  new PageConstruct($local_id,3,$path);           
+            $dataProduct= get_object_vars(json_decode(base64_decode($dataProduct)));
+            
+            print($css->get_slider_product($dataProduct));
+        break;//Fin caso 4
         
         
           
