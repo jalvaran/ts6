@@ -78,6 +78,9 @@ class PageConstruct extends html_estruct_class{
                     <meta name="author" content="Techno Soluciones SAS">
                     <meta name="description" content="Plataforma TS6">
                     <meta name="keywords" content="'.$keywords.'">
+                    <!-- Alertify -->
+                    <link rel="stylesheet" href="'.$this->path.'assets/plugin/alertify/themes/alertify.core.css" />
+                    <link rel="stylesheet" href="'.$this->path.'assets/plugin/alertify/themes/alertify.default.css" id="toggleCSS" />
                     <!-- Favicon Icon -->
                     <link rel="icon" type="image/x-icon" href="'.$favicon.'" />
                     <!-- Material Design Lite Stylesheet CSS -->
@@ -96,10 +99,13 @@ class PageConstruct extends html_estruct_class{
                     <link rel="stylesheet" href="'.$this->path.'assets/plugin/flexslider/flexslider.min.css" />
                     <!-- Sweetalert CSS -->
                     <link rel="stylesheet" href="'.$this->path.'assets/plugin/sweetalert/sweetalert.css" /> 
-                        <!-- Custom Main Stylesheet CSS -->
-                    <link rel="stylesheet" href="'.$this->path.'dist/css/ts-style.css">
+                    <!-- Custom Main Stylesheet by Techno CSS -->
+                    <link rel="stylesheet" href="'.$this->path.'dist/css/techno/ts-style.css">
                     <!-- Custom Main Stylesheet CSS -->
-                    <link rel="stylesheet" href="'.$this->path.'dist/css/style.css">';
+                    <link rel="stylesheet" href="'.$this->path.'dist/css/style.css">
+                    
+                    ';
+        
                     if(isset($this->dataTheme["css"]) and $this->dataTheme["css"]<>''){
                         $html.='
                                 <link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
@@ -237,8 +243,12 @@ class PageConstruct extends html_estruct_class{
      * @return type
      */
     public function get_JSGeneral() {
-        return('<!-- Jquery Library 2.1 JavaScript-->
+        return('<!-- Alertify-->
+                <script src="'.$this->path.'assets/plugin/alertify/lib/alertify.min.js"></script>
+                <!-- Jquery Library 2.1 JavaScript-->
                 <script src="'.$this->path.'assets/plugin/jquery/jquery-2.1.4.min.js"></script>
+                <!-- Jquery Cookie JavaScript-->
+                <script src="'.$this->path.'assets/plugin/jquery_cookie/jquery.cookie.js"></script>    
                 <!-- Popper JavaScript-->
                 <script src="'.$this->path.'assets/plugin/popper/popper.min.js"></script>
                 <!-- Bootstrap Core JavaScript-->
@@ -272,6 +282,7 @@ class PageConstruct extends html_estruct_class{
                     <!-- Sweetalert Plugin -->
                 <script src="'.$this->path.'modules/main/jsPages/pages.js"></script>
                 <!--Custom JavaScript-->
+                <script src="'.$this->path.'general/js/general.js"></script>
                 <script src="'.$this->path.'dist/js/custom.js"></script>
                 
                 ');
@@ -471,18 +482,24 @@ class PageConstruct extends html_estruct_class{
     
        
     public function get_card_last_product($dataProduct) {
-        $imgProduct=$this->path.str_replace("../", "", $dataProduct["Ruta"]);
+        $arrayImages= explode('|',$dataProduct["Rutas"]);
+        $imgProduct=$this->path.str_replace("../", "", $arrayImages[0]);
+        
+        foreach ($dataProduct as $key => $value) {
+            $dataProduct[$key]= str_replace('"', "", $dataProduct[$key]);
+        }
+        $dataProductCard= base64_encode(json_encode($dataProduct));
         $html='<li class="row align-items-center">
                     <div class="col-4 p-0">
                         <div class="img">
-                            <a href="#"><img src="'.$imgProduct.'" alt=""></a>
+                            <img class="tsProductCard" data-dataproduct="'.$dataProductCard.'" data-produc_id="'.$dataProduct["ID"].'" data-local_id="'.$this->dataClient["ID"].'" src="'.$imgProduct.'" alt="" style="cursor:pointer;">
                         </div>
                     </div>
                     <div class="col-8">
                         <h6 class="title"><a href="#">'.ucfirst(strtolower($dataProduct["Nombre"])).'</a></h6>
                         <div class="price">$'.number_format($dataProduct["PrecioVenta"]).'</div>
                         <div class="link">
-                            <a><i class="icon-basket" style="font-size:14px;"></i>Agregar al Carro</a>
+                            <a ><i class="icon-basket" style="font-size:14px;"></i>Agregar al Carro</a>
                         </div>
                     </div>
                 </li>';
@@ -499,7 +516,7 @@ class PageConstruct extends html_estruct_class{
                         <div class="panel-body">
                             <ul class="widget-product">';
         $sql="SELECT t1.*,
-                     (SELECT Ruta FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created DESC LIMIT 1 ) as Ruta 
+                     (SELECT (GROUP_CONCAT(Ruta SEPARATOR '|') )  FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created ASC ) as Rutas 
                  FROM productos_servicios t1 ORDER BY Created DESC LIMIT 10";
         $query= $this->obCon->QueryExterno($sql, HOST , USER, PW, $this->dataClient["db"], "");
         while($dataProduct=$this->obCon->FetchAssoc($query)){
@@ -508,7 +525,8 @@ class PageConstruct extends html_estruct_class{
         
         $html.='            
                             </ul>
-                        </div>
+                            </div>
+                        
                     </div>';
         
         return($html);
@@ -516,7 +534,14 @@ class PageConstruct extends html_estruct_class{
     }
     
     public function get_classifications() {
-        $html='<div class="panel-body">
+        $html='<div class="panel panel-default eventp-sidebar">
+            <div class="panel-head">
+                    <div class="panel-title">
+                        <span class="panel-title-text">Categoría de Productos o Servicios</span>
+                    </div>
+                </div>
+
+                    <div class="panel-body">
                   <ul class="category-list">';
         $sql="SELECT t1.ID,t1.Clasificacion,
                         (SELECT COUNT(*) FROM productos_servicios t2 WHERE t2.idClasificacion=t1.ID) AS TotalItems 
@@ -528,44 +553,45 @@ class PageConstruct extends html_estruct_class{
                 }
         $html.=' </ul>
                 </div>
-            </div>';
+                </div>
+            ';
         
         return($html);
     }
     
-    public function get_slider_product() {
+    public function get_slider_product($dataProduct) {
+        $arrayImages= explode('|',$dataProduct["Rutas"]);
         
-        $html='<div class="flexslider thumbnail-slider">
-                                
-                            <div class="flex-viewport" style="overflow: hidden; position: relative;">
-                                <ul class="slides" style="width: 1000%; transition-duration: 0.6s; transform: translate3d(-900px, 0px, 0px);">
-                                    <li data-thumb="'.$this->path.'uploads/shop-13.jpg" class="clone" aria-hidden="true" style="width: 450px; margin-right: 0px; float: left; display: block;">
-                                        <img src="'.$this->path.'uploads/shop-13.jpg" alt="" draggable="false">
-                                    </li>
-                                    <li data-thumb="'.$this->path.'uploads/shop-11.jpg" style="width: 450px; margin-right: 0px; float: left; display: block;" class="" data-thumb-alt="">
-                                        <img src="'.$this->path.'uploads/shop-11.jpg" alt="" draggable="false">
-                                    </li>
-                                    <li data-thumb="'.$this->path.'uploads/shop-12.jpg" data-thumb-alt="" style="width: 450px; margin-right: 0px; float: left; display: block;" class="flex-active-slide">
-                                        <img src="'.$this->path.'uploads/shop-12.jpg" alt="" draggable="false">
-                                    </li>
-                                    <li data-thumb="'.$this->path.'uploads/shop-13.jpg" data-thumb-alt="" style="width: 450px; margin-right: 0px; float: left; display: block;" class="">
-                                        <img src="'.$this->path.'uploads/shop-13.jpg" alt="" draggable="false">
-                                    </li>
-                                    <li data-thumb="'.$this->path.'uploads/shop-11.jpg" style="width: 450px; margin-right: 0px; float: left; display: block;" class="clone" aria-hidden="true">
-                                        <img src="'.$this->path.'uploads/shop-11.jpg" alt="" draggable="false">
-                                    </li>
-                                </ul>
+        $html='<div class="panel panel-default">
+                                <div class="panel-head">
+                                    <div class="panel-title">'.ucfirst(strtolower($dataProduct["Nombre"])).'</div>
+                                </div>
+                                <div class="panel-wrapper">
+                                    <div class="panel-body">
+                                        <div class="row">
+                                            <div class="col-md-12 related-product">
+                                                <div class="flexslider thumbnail-slider">
+                                                    <ul class="slides">';
+        foreach ($arrayImages as $key => $ruta) {
+            $ruta= str_replace("../", "", $ruta);
+            $html.='                            <li data-thumb="'.$this->path.$ruta.'">
+                                                    <img src="'.$this->path.$ruta.'" alt="" />
+                                                </li>';
+        }
+        
+        
+        $html.='                                       
+                                                    </ul>
+                                                </div>
+                                                Referencia: <strong>'.$dataProduct["Referencia"].'</strong><br>
+                                                Precio de Venta: <strong>$ '.number_format($dataProduct["PrecioVenta"]).'</strong><br>
+                                                Descripción: <strong>'.ucfirst(strtolower($dataProduct["DescripcionLarga"])).'</strong><br>
+                                            </div>                                            
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <ul class="flex-control-nav flex-control-thumbs">
-                                <li><img src="'.$this->path.'uploads/shop-11.jpg" class="" draggable="false"></li>
-                                <li><img src="'.$this->path.'uploads/shop-12.jpg" draggable="false" class="flex-active"></li>
-                                <li><img src="'.$this->path.'uploads/shop-13.jpg" draggable="false" class=""></li>
-                           </ul>
-                           <ul class="flex-direction-nav">
-                                <li class="flex-nav-prev"><a class="flex-prev" href="#">Anterior</a></li>
-                                <li class="flex-nav-next"><a class="flex-next" href="#">Siguiente</a></li>
-                            </ul>
-                        </div>';
+                      ';
     
         return($html);
         
@@ -615,6 +641,8 @@ class PageConstruct extends html_estruct_class{
     public function get_card_product($dataProduct) {
         
         $arrayImages= explode('|',$dataProduct["Rutas"]);
+        $Telefono=$this->dataClient["Indicativo"].str_replace(" ", "", $this->dataClient["Whatsapp"]);
+        $Mensaje="Hola me gustaría obtener más información sobre el producto ".$dataProduct["Nombre"]." de Referencia: ".$dataProduct["Referencia"];
         $html='<div class="panel panel-default" >
                                 <div class="panel-head">
                                     <div class="panel-title">
@@ -622,7 +650,7 @@ class PageConstruct extends html_estruct_class{
                                         <span class="panel-title-text" style="font-size:30px;color:black">'.ucfirst(strtolower($dataProduct["Nombre"])).'</span>
                                     </div>
                                     <div class="panel-action">
-                                        <a class=""><i class="fa fa-link" style="color:#e30aa1;font-size:24px"></i></a>
+                                        <a class="" href="https://api.whatsapp.com/send?phone='.$Telefono.'&text='.$Mensaje.'"  >Info <i class="fa fa-info-circle" style="color:#e30aa1;font-size:30px"></i></a>
                                         
                                     </div>  
                                 </div>
@@ -634,28 +662,16 @@ class PageConstruct extends html_estruct_class{
         $html.='<div class="product-card">
                             ';
          $imgProduct=$this->path.str_replace("../", "", $arrayImages["0"]);
+         foreach ($dataProduct as $key => $value) {
+            $dataProduct[$key]= str_replace('"', "", $dataProduct[$key]);
+        }
+         $dataProductCard= base64_encode(json_encode($dataProduct));
          $html.='
-                    <img src="'.$imgProduct.'" style="box-shadow: 0 0 30px #000000;width:100%;border-top-right-radius:25%;border-bottom-left-radius:25%;">
+                    <img class="tsProductCard" data-dataproduct="'.$dataProductCard.'" data-local_id="'.$this->dataClient["ID"].'" src="'.$imgProduct.'" style="box-shadow: 0 0 30px #000000;width:100%;border-top-right-radius:25%;border-bottom-left-radius:25%;cursor:pointer;"  >
                     
                     </img>
                 ';
-        //$html.=$this->get_carousel_1("cr_".$dataProduct["ID"], $arrayImages);
-        /*
-        $html.='<div class="product-img">
-                                <div class="owl-carousel owl-theme theme-owlslider dots-overlay text-center ts-gallery">';
-        foreach ($arrayImages as $key => $imgProduct) {
-            $imgProduct=$this->path.str_replace("../", "", $imgProduct);
-            
-            $html.='<div class="theme-owlslider-container ts-gallery">
-                        <img class="img-responsive" src="'.$imgProduct.'" alt="">
-                    </div>';
-        }   
-        $html.='
-                                </div>
-                            </div>';  
-         * 
-         */
-                    
+        
                             
                             $html.='
                                 
@@ -670,7 +686,7 @@ class PageConstruct extends html_estruct_class{
                                 </div>
                                 <div class="col-md-8">
                                     
-                                    <textarea class="form-control" placeholder="Observaciones" style="bottom:0px;position:absolute"></textarea>
+                                    <textarea id="Observaciones_'.$dataProduct["ID"].'" class="form-control" placeholder="Observaciones" style="bottom:0px;position:absolute"></textarea>
                                 </div>
                             </div>
                             
@@ -694,7 +710,7 @@ class PageConstruct extends html_estruct_class{
                                         </div>
                             <div class="col-md-6">
                                 
-                                    <button class="form-control btn btn-secondary btn-pill" style="font-size:20px;" data-product_id="'.$dataProduct["ID"].'" data-local_id="'.$this->dataClient["ID"].'" >Agregar <i class="fab fa-opencart" style=""></i></button>
+                                    <button id="btnCarAdd_'.$dataProduct["ID"].'" class="form-control btn btn-secondary btn-pill ts-btn-shopping" style="font-size:20px;" data-product_id="'.$dataProduct["ID"].'" data-local_id="'.$this->dataClient["ID"].'" >Agregar <i class="fab fa-opencart" style=""></i></button>
 
                                 
                             </div>
@@ -710,10 +726,18 @@ class PageConstruct extends html_estruct_class{
         $limit=20;
         $condition=" WHERE Estado=1 ";
         if($classification<>''){
-            $condition.=" AND idt1.Estado=1Clasificacion='$classification'";
+            $condition.=" AND idClasificacion='$classification'";
         }
         if($search<>''){
-            $condition.=" AND Nombre like '%$search%'";
+            $arraySearch= explode(" ", $search);
+            $condition.=" AND ( ";
+            foreach ($arraySearch as $key => $value) {
+                if($value<>''){
+                    $condition.=" Nombre like '%$value%' OR ";
+                }
+            }
+            $condition=substr($condition, 0, -3); 
+            $condition.=" OR Referencia like '%$search%') ";
         }
         
         $sql="SELECT COUNT(ID) as Items FROM productos_servicios $condition"; 
@@ -730,18 +754,33 @@ class PageConstruct extends html_estruct_class{
                      (SELECT (GROUP_CONCAT(Ruta SEPARATOR '|') )  FROM productos_servicios_imagenes t2 WHERE t2.idProducto=t1.ID ORDER BY Created ASC ) as Rutas 
                  FROM productos_servicios t1 $condition ORDER BY Created DESC LIMIT $init_point,$limit;";
         $query= $this->obCon->QueryExterno($sql, HOST , USER, PW, $this->dataClient["db"], "");
-        
+        $find=0;
         $html='<div id="divListProducts" class="row">';
                 
             while($dataProduct= $this->obCon->FetchAssoc($query)){
-                $html.='<div class="col-md-12">';
+                $find=$find+1;
+                $html.='<div class="col-md-6">';
                     $html.= $this->get_card_product($dataProduct);
                 $html.='</div>';
             }
             
+        $html.='<div class="col-md-12">';    
+        
+        if($find==0){
+            $html.='<div class="alert alert-outline alert-icon alert-danger alert-dismissible fade show" role="alert">
+                        <div class="alert--icon">
+                            <i class="fa fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="alert-text">
+                            <strong>Vaya!</strong> Parece que no hay resultados!
+                        </div>
+                        
+                    </div>';
+        }
+        
         
         if($totals>$limit){
-            $html.='<div class="col-md-12">';
+            
                 $html.='<div class="input-group">
                         <div class="input-group-prepend">';
                 
@@ -764,7 +803,8 @@ class PageConstruct extends html_estruct_class{
             //$html.='<button class="form-control btn btn-primary loadMoreProducts" data-page="'.($page+1).'" data-local_id="'.$this->dataClient["ID"].'" style="font-size:20px;">Muéstrame Más...</button>';
             $html.="</div>";     
         }else{
-            $html.='<div class="alert alert-outline alert-icon alert-success alert-dismissible fade show" role="alert">
+            if($find>0){
+                $html.='<div class="alert alert-outline alert-icon alert-success alert-dismissible fade show" role="alert">
                         <div class="alert--icon">
                             <i class="fa fa-check"></i>
                         </div>
@@ -773,27 +813,59 @@ class PageConstruct extends html_estruct_class{
                         </div>
                         
                     </div>';
+            }
         }
         $html.='</div>';
         return($html);
     }
     
     public function get_search_products() {
-        $html='<div class="row align-items-center shop-filter" style="border-radius:20px;background-color:white">
+        $html='<div class="panel panel-default eventp-sidebar" style="border-radius:20px;background-color:white">
+                        <div class="panel-head">
+                            <div class="panel-title">
+                                <span class="panel-title-text">Lista de Productos o Servicios</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">';
+        $html.='<div class="row align-items-center shop-filter" style="border-radius:20px;background-color:white">
                             <div class="col-sm-12">
-                                <div class="search-input">
-                                    <input id="searchProducts" data-local_id="'.$this->dataClient["ID"].'" type="text" class="searchProducts" placeholder="Buscar....">
-                                    <button class="search-btn"><i class="icon-magnifier"></i></button>
-                                </div>
+                                <div class="search-input"  >
+                                    <input id="searchProducts" data-local_id="'.$this->dataClient["ID"].'" type="text" class="searchProducts" placeholder="Buscar...." >
+                                    
+                                    
+                                    <button id="buttonSearchProduct" data-local_id="'.$this->dataClient["ID"].'" class="search-btn"><i class="icon-magnifier"></i></button>';
+        $html.='<select id="searchCategories" class="form-control" data-local_id="'.$this->dataClient["ID"].'">';
+        $sql="SELECT t1.ID,t1.Clasificacion,
+                        (SELECT COUNT(*) FROM productos_servicios t2 WHERE t2.idClasificacion=t1.ID) AS TotalItems 
+                        FROM inventarios_clasificacion t1 WHERE Estado=1";
+                $query= $this->obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], "");
+                $html.='<option value="">';
+                        $html.='Todas las categorías';
+                    $html.='</option>';
+                while($dataClasified= $this->obCon->FetchAssoc($query)){
+                    $html.='<option value="'.$dataClasified["ID"].'">';
+                        $html.=ucfirst(strtolower($dataClasified["Clasificacion"])).' <span>('.$dataClasified["TotalItems"].')</span>';
+                    $html.='</option>';
+                    //$html.='<li><a class="mnu_clasificacion" style="font-size:16px" data-local_id="'.$this->dataClient["ID"].'" data-clasificacion_id="'.$dataClasified["ID"].'"><i class="icon-arrow-right"></i>'.ucfirst(strtolower($dataClasified["Clasificacion"])).'</a><span>('.$dataClasified["TotalItems"].')</span></li>';                               
+                
+                }  
+                
+        $html.='</select>';
+        $html.='                </div>
                             </div>
                             
                         </div>'; 
+        
         return($html);
         
     }
     
     public function get_virtual_shop() {
         $html="";
+        $html.=$this->get_modal("modal_virtual_shop", "Domi", "divModal");
+        $html.=$this->get_IconWhats("Hola te encontré en Domi y quería ");
+        $html.=$this->get_ShoppingCar();
+        $html.=$this->get_IconLogin();
         switch ($this->dataClient["virtual_shop"]) {
             
             case 1://Dibuja la primer opcion de tienda virtual
@@ -802,24 +874,21 @@ class PageConstruct extends html_estruct_class{
                                     <div class="layer-stretch">
                                         <div class="layer-wrapper pb-20">
                                             <div class="row pt-4">
-                                                <div class="col-lg-4">
-                                                    <div class="panel panel-default eventp-sidebar">
-                                                        <div class="panel-head">
-                                                            <div class="panel-title">
-                                                                <span class="panel-title-text">Categoría de Productos o Servicios</span>
-                                                            </div>
-                                                        </div>
+                                                                                                
+                                                        
                                                         
                                                                 ';
                                                          
                 
-                $html.=$this->get_classifications();
+               // $html.=$this->get_classifications();
                 
-                $html.= $this->get_last_products();                                   
-                $html.='</div> 
-                        <div class="col-lg-8">';
+                //$html.= $this->get_last_products();
+                
+                //$html.='</div>'; //Cierra div col4
+                $html.='<div class="col-lg-12">';
                 
                 $html.=$this->get_search_products();
+                
                 $html.= $this->get_list_products();                               
                 
                 $html.='</div>
@@ -828,7 +897,7 @@ class PageConstruct extends html_estruct_class{
                                     </div>
                                 </div><!-- End Page Section -->';
                 
-                                              
+                $html.='</div>';$html.='</div>';                              
                                               
                                               
                                               
@@ -839,6 +908,58 @@ class PageConstruct extends html_estruct_class{
         return($html);
     }
     
+    public function get_modal($id,$Titulo,$idDivContent,$Tipo=2) {
+        $ClassLarge="";
+        if($Tipo==1){
+            $ClassLarge="modal-sm";
+        }
+        if($Tipo==2){
+            $ClassLarge="modal-lg";
+        }
+        if($Tipo==3){
+            $ClassLarge="modal-xl";
+        }
+        $html=('<div class="modal fade" id="'.$id.'">
+                    <div class="modal-dialog modal-dialog-scrollable '.$ClassLarge.'">
+                      <div class="modal-content">
+
+                        <!-- Modal Header -->
+                        <div class="modal-header">
+                          <h1 class="modal-title">'.$Titulo.'</h1>
+                          <button type="button" class="close" data-dismiss="modal">×</button>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div id='.$idDivContent.' class="modal-body" >
+                          
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>');
+        return($html);
+    }
+    
+    public function get_IconWhats($Mensaje,$Color="green") {
+        $Telefono=$this->dataClient["Indicativo"].str_replace(" ","",$this->dataClient["Whatsapp"]);
+        return('<a id="IconWhatsApp" class="whats-domi-icon" style="color:'.$Color.';" target="_blank" href="https://api.whatsapp.com/send?phone='.$Telefono.'&text='.$Mensaje.'" ><img src="'.$this->path.'images/whatsapp.png" style="width:60px"></img></a>');
+    }
+    
+    public function get_ShoppingCar($id="aShoppingCAr",$idSp="spItemsCar",$idSpTotal="spTotalCar",$Color="#d91d1d") {
+        return('<a id="'.$id.'" class="cart-icon" ><img src="'.$this->path.'images/shoping3.png" style="width:60px;">      
+            <span class="cart-icon-sp" id="'.$idSp.'">0</span> 
+            <span class="cart-icon-sp-total" id="'.$idSpTotal.'">999.990</span>     
+        </a>');
+    }
+    
+    public function get_IconLogin($id="IconLogin",$Color="green") {
+        return('<a id="'.$id.'" class="login-domi-icon fa fa-user-circle"  style="color:'.$Color.';"></a>');
+    }
     
     
 //Fin clase    
