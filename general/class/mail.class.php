@@ -3,23 +3,22 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-if(file_exists("../../modelo/php_conexion.php")){
-    include_once("../../modelo/php_conexion.php");
-}
+include_once("modelo/php_conexion.php");
+
 /* 
  * Clase que realiza los procesos de facturacion electronica
  * Julian Alvaran
  * Techno Soluciones SAS
  */
 
-class TS_Mail extends ProcesoVenta{
+class TS_Mail extends conexion{
     
     public function EnviarMailXPHPNativo($para,$de,$nombreRemitente, $asunto, $mensajeHTML, $Adjuntos='') {
         
         //$DatosParametrosFE=$this->DevuelveValores("facturas_electronicas_parametros", "ID", 4);
         
         //recipient
-        $to = strtolower($para);
+        $to = $para;
 
         //sender
         $from = $de;
@@ -43,15 +42,12 @@ class TS_Mail extends ProcesoVenta{
         //multipart boundary 
         $message = "--{$mime_boundary}\n" . "Content-Type: text/html; charset=\"UTF-8\"\n" .
         "Content-Transfer-Encoding: 7bit\n\n" . $htmlContent . "\n\n"; 
-        //$Adjuntos[0]="../clases/Factura.pdf";
+
         //preparing attachment
-        if($Adjuntos[0]<>''){
+        if($Adjuntos<>''){
             foreach($Adjuntos as $file){
-                //print("Enviando: ".$file);
-                if(!empty($file)){
-                    
+                if(!empty($file) > 0){
                     if(is_file($file)){
-                        //print($file);
                         $message .= "--{$mime_boundary}\n";
                         $fp =    @fopen($file,"rb");
                         $data =  @fread($fp,filesize($file));
@@ -87,7 +83,7 @@ class TS_Mail extends ProcesoVenta{
         Primero, obtenemos el listado de e-mails
         desde nuestra base de datos y la incorporamos a un Array.
         */
-        $email=strtolower($para);
+        $email=$para;
         $name="";
         $email_from=$de;
         $name_from=$nombreRemitente;
@@ -113,7 +109,7 @@ class TS_Mail extends ProcesoVenta{
         $mail->IsHTML(true);
         $mail->Subject = $asunto;
         $mail->Body = $mensajeHTML;
-        if($Adjuntos[0]<>''){
+        if($Adjuntos<>''){
             foreach ($Adjuntos as $value) {
                 $Vector=explode('/',$value);
                 $Total=count($Vector);
