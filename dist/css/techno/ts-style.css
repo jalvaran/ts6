@@ -343,3 +343,199 @@
 @keyframes spinner-5 {
   to {
     transform: rotate(360deg); } }
+
+
+/* [ carrito de compras ] */
+
+.cart {
+  position: absolute;
+  width: auto;
+  left: -500%;
+  list-style: none;
+  background: #fff;
+  
+  border-radius: 4px;
+  top: -1.5em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.cart-icon {
+  position: fixed;
+  cursor:pointer;
+  z-index: 2;
+  top: 100px;
+  right: 5px;
+  height: 60px;
+  width: 60px;
+  font-size:60px;
+  
+}
+.cart-icon-sp  {
+  position: absolute;
+  top: 8px;
+  right: 5px;
+  height: 30px;
+  width: 30px;
+  line-height: 30px;
+  background-color: #ff7f1b;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 50%;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: -webkit-transform 0.2s 0s;
+  -moz-transition: -moz-transform 0.2s 0s;
+  transition: transform 0.2s 0s;
+}
+
+.cart-icon-sp-total  {
+  position: absolute;
+  top: 75px;
+  right: 5px;
+  height: 30px;
+  width: 115%;
+  line-height: 30px;
+  background-color: #dc24ce;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 50%;
+  
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: -webkit-transform 0.2s 0s;
+  -moz-transition: -moz-transform 0.2s 0s;
+  transition: transform 0.2s 0s;
+}
+
+/* [ chat ] */
+
+.chat {
+  position: absolute;
+  width: auto;
+  left: -500%;
+  list-style: none;
+  background: #fff;
+  
+  border-radius: 4px;
+  top: -1.5em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.chat-icon {
+  position: fixed;
+  cursor:pointer;
+  z-index: 2;
+  bottom: 20%;
+  right: 10px;
+  height: 60px;
+  width: 60px;
+  font-size:60px;
+  
+}
+.chat-icon-sp  {
+  position: absolute;
+  top: 2px;
+  right: 5px;
+  height: 30px;
+  width: 30px;
+  line-height: 30px;
+  background-color: #c91111;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 50%;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: -webkit-transform 0.2s 0s;
+  -moz-transition: -moz-transform 0.2s 0s;
+  transition: transform 0.2s 0s;
+}
+
+.chat-msn  {
+  position: absolute;
+  top: 70px;
+  right: 5px;
+  height: 30px;
+  width: 115%;
+  line-height: 30px;
+  background-color: #3fd21b;
+  color: black;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 10%;
+  -webkit-transform: scale(1);
+  -moz-transform: scale(1);
+  -ms-transform: scale(1);
+  -o-transform: scale(1);
+  transform: scale(1);
+  -webkit-transition: -webkit-transform 0.2s 0s;
+  -moz-transition: -moz-transform 0.2s 0s;
+  transition: transform 0.2s 0s;
+}
+
+/* [ Login ] */
+
+.login-domi {
+  position: absolute;
+  width: auto;
+  left: -500%;
+  list-style: none;
+  background: #fff;
+  
+  border-radius: 4px;
+  top: -1.5em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.login-domi-icon {
+  position: fixed;
+  cursor:pointer;
+  z-index: 2;
+  top: 20px;
+  right: 5px;
+  height: 60px;
+  width: 60px;
+  font-size:60px;
+  
+}
+
+/* [ icono whats ] */
+
+.whats-domi {
+  position: absolute;
+  width: auto;
+  left: -500%;
+  list-style: none;
+  background: #fff;
+  
+  border-radius: 4px;
+  top: -1.5em;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.whats-domi-icon {
+  position: fixed;
+  cursor:pointer;
+  z-index: 2;
+  top: 210px;
+  right: 5px;
+  height: 60px;
+  width: 60px;
+  font-size:60px;
+  
+}
