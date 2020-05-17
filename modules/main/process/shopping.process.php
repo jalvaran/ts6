@@ -59,22 +59,18 @@ if( !empty($_REQUEST["ActionShopping"]) ){
             $sql="UPDATE pedidos SET CantidadItems=CantidadItems+'$Cantidad', Total=Total+$ValorUnitario 
                          WHERE ID='$pedido_id'";
             $obCon->Query($sql);
-            //obtengo la cantidad de items y el total del pedido
-            $sql="SELECT SUM(CantidadItems) AS CantidadItems,SUM(Total) AS Total FROM pedidos WHERE cliente_id='$user_id' AND Estado=1";
-            $DatosPedido=$obCon->FetchAssoc($obCon->Query($sql));
-            $Items=$DatosPedido["CantidadItems"];
-            $Total=$DatosPedido["Total"];
-            $NumberTotal= number_format($DatosPedido["Total"]);
-            print("OK;Producto Agregado;$Items;$Total;$NumberTotal");
+            
+            print("OK;Producto Agregado");
             
         break;//Fin caso 1
         
         case 2://Obtenga la cantidad de items en pedidos en curso por un usuario
             $user_id=$obCon->normalizar($_REQUEST["user_id"]);
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]);
             if($user_id==''){
                 exit("E1;No se recibió el id del usuario");
             }
-            $sql="SELECT SUM(CantidadItems) AS CantidadItems,SUM(Total) AS Total FROM pedidos WHERE cliente_id='$user_id' AND Estado=1";
+            $sql="SELECT SUM(CantidadItems) AS CantidadItems,SUM(Total) AS Total FROM pedidos WHERE cliente_id='$user_id' AND local_id='$local_id' AND Estado=1";
             $DatosPedido=$obCon->FetchAssoc($obCon->Query($sql));
             $Items=$DatosPedido["CantidadItems"];
             $Total=$DatosPedido["Total"];
@@ -123,8 +119,8 @@ if( !empty($_REQUEST["ActionShopping"]) ){
         
         case 4://Eliminar item
             
-            $idLocalEdit=$obCon->normalizar($_REQUEST["idLocalEdit"]);            
-            $idItem=$obCon->normalizar($_REQUEST["idItem"]);
+            $idLocalEdit=$obCon->normalizar($_REQUEST["local_id"]);            
+            $idItem=$obCon->normalizar($_REQUEST["item_id"]);
             
             if($idLocalEdit==''){
                 exit("E1;No se recibió el local");
@@ -134,8 +130,6 @@ if( !empty($_REQUEST["ActionShopping"]) ){
                 exit("E1;No se recibió el id");
             }
             
-            
-                
             $dbLocal=$obCon->getDataBaseLocal($idLocalEdit);                
             
             $sql="SELECT pedido_id FROM pedidos_items 
@@ -154,18 +148,21 @@ if( !empty($_REQUEST["ActionShopping"]) ){
         case 5://Solicitar pedido
             
             $token = $_POST['token'];
-            $action = $_POST['action'];      
-            
+            $action = $_POST['action'];
+            //Activar para usar RECAPTCHA
+           
             $respuestaToken=$obCon->validaTokenGoogle($token, $action,RECAPTCHA_V3_SECRET_KEY);
             if($respuestaToken["success"]<>1 or $respuestaToken["action"]<>$action){
                 exit("E1;El token no coincide");
             }
+             
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]);  
             $idUserClient=$obCon->normalizar($_REQUEST["idUserClient"]);  
             $NombreCliente=$obCon->normalizar($_REQUEST["NombreCliente"]);  
             $DireccionCliente=$obCon->normalizar($_REQUEST["DireccionCliente"]);  
             $Telefono=$obCon->normalizar($_REQUEST["Telefono"]); 
             $ObservacionesPedido=$obCon->normalizar($_REQUEST["ObservacionesPedido"]); 
-            
+            $idPedido=$obCon->normalizar($_REQUEST["pedido_id"]); 
             if($idUserClient==""){
                 exit("E1;No se recibió el id del cliente");
             }
@@ -226,12 +223,13 @@ if( !empty($_REQUEST["ActionShopping"]) ){
                 }
             }
             $obCon->ActualiceDatosCliente($idUserClient, $NombreCliente, $DireccionCliente, $Telefono);
-            $obTel=new TS_Telegram($idUser);
+            $obTel=new TS_Telegram(1);
             
             $Cliente=" $NombreCliente, $DireccionCliente, $Telefono ";
             
             $sql="SELECT t1.Created,t1.ID,t1.local_id,t2.Email,t2.Nombre,t2.idTelegram,t2.UsaDomicilioDomi FROM pedidos t1 INNER JOIN locales t2 ON t1.local_id=t2.ID
-                     WHERE cliente_id='$idUserClient' AND t1.Estado=1";
+                     WHERE t1.ID='$idPedido' AND t1.Estado=1";
+            //print($sql);
             $Consulta=$obCon->Query($sql);
             $MailReport[]="";
             $htmlMensaje="";
@@ -344,7 +342,7 @@ if( !empty($_REQUEST["ActionShopping"]) ){
             if($DatosCliente["Nombre"]==""){
                 exit("E1");
             }
-            print("OK;".$DatosCliente["Nombre"].";".$DatosCliente["Telefono"].";".$DatosCliente["Direccion"]);
+            print("OK;".$DatosCliente["Nombre"].";".$DatosCliente["Direccion"].";".$DatosCliente["Telefono"]);
         break;//Fin caso 7
         
         case 8://verifica inicio de sesion
@@ -381,14 +379,16 @@ if( !empty($_REQUEST["ActionShopping"]) ){
         case 10://Iniciar sesion de un usuario comprador
             $token = $_POST['token'];
             $action = $_POST['action'];  
+           
             $respuestaToken=$obCon->validaTokenGoogle($token, $action,RECAPTCHA_V3_SECRET_KEY);
             if($respuestaToken["success"]<>1 or $respuestaToken["action"]<>$action){
-                exit("E1;El token googel no coincide");
+                exit("E1;El token google no coincide");
             }
+            
             $emailLogin= strtolower($obCon->normalizar($_REQUEST["emailLogin"]));
             $passLogin=$obCon->normalizar($_REQUEST["passLogin"]);
             
-            $sql="SELECT ID FROM client_user WHERE Email='$emailLogin' AND Password='$passLogin'";
+            $sql="SELECT ID FROM client_user WHERE Email='$emailLogin' AND MD5(Password)=('$passLogin')";
             $DatosLogin=$obCon->FetchAssoc($obCon->Query($sql));
             if($DatosLogin["ID"]==''){
                 exit("E1;Usuario o Password incorrectos");
@@ -397,6 +397,51 @@ if( !empty($_REQUEST["ActionShopping"]) ){
                 exit("OK;Inicio de sesion correcto;".$DatosLogin["ID"]);
             }
         break;//Fin caso 10    
+        
+        case 11://Contacto desde la página
+            $token = $_POST['token'];
+            $action = $_POST['action'];  
+            /*
+            $respuestaToken=$obCon->validaTokenGoogle($token, $action,RECAPTCHA_V3_SECRET_KEY);
+            if($respuestaToken["success"]<>1 or $respuestaToken["action"]<>$action){
+                exit("E1;El token google no coincide");
+            }
+            *
+             * 
+             */
+            $local_id= strtolower($obCon->normalizar($_REQUEST["local_id"]));
+            $nameContact= strtolower($obCon->normalizar($_REQUEST["nameContact"]));
+            $email=$obCon->normalizar($_REQUEST["email"]);
+            $phone=$obCon->normalizar($_REQUEST["phone"]);
+            $mensageContact=$obCon->normalizar($_REQUEST["mensageContact"]);
+            
+            if($email==""){
+                exit("E1;Debes escribir una dirección de correo electronico válida;subscribe-email");
+            }
+            if(!filter_var($email, FILTER_VALIDATE_EMAIL)){
+                exit("E1;El campo Email No contiene un Correo válido;subscribe-email");
+            }
+            if($nameContact==""){
+                exit("E1;Debes escribir una contraseña;nameContact");
+            }
+            if($mensageContact==""){
+                exit("E1;Debes escribir un mensaje;mensageContact");
+            }
+            if($phone==""){
+                exit("E1;Debes suministrar un Teléfono;phoneContact");
+            }
+            
+            $sql="SELECT Email,Nombre FROM locales WHERE ID='$local_id'";
+            $dataLocal=$obCon->FetchAssoc($obCon->Query($sql));
+            $emailLocal=$dataLocal["Email"];
+            $Nombre=$dataLocal["Nombre"];
+            $Mensaje="Hola <strong>$Nombre</strong><br>";
+            $Mensaje.="<strong>$nameContact</strong> Con Número Teléfonico <strong>$phone</strong>, Te ha escrito desde tu pagina WEB el Siguiente Mensaje:<br>";
+            $Mensaje.="<pre>".$mensageContact."</pre>";
+            $Mensaje.="<br>Respondele al correo que te ha suministrado: <strong>$email</strong>";
+            $obMail->EnviarMailXPHPNativo($emailLocal, "technosoluciones.domi@gmail.com", "PLATAFORMA DOMI", "Contacto desde la pagina", $Mensaje);
+            print("OK;El mensaje ha sido enviado");
+        break;//Fin caso 11
         
     }
           

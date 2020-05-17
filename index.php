@@ -1,6 +1,7 @@
 <?php
 session_start();
-    
+require_once 'constructores/paginas_constructor.php';   
+
 $filename = __DIR__ . preg_replace('#(\?.*)$#', '', $_SERVER['REQUEST_URI']);
 
 if (php_sapi_name() === 'cli-server' && is_file($filename)) {
@@ -29,34 +30,50 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
      * 
      */
 
-    // Dynamic route: /client/client_id/*
+    
+    $router->get('/searchMunicipalities', function () {       
+        include_once "general/buscadores/catalogo_municipios.search.php";
+     });
+     
+     $router->post('/views', function () {       
+        include_once "modules/main/views/pages.draw.php";
+     });
+     
     $router->get('/(.*)', function ($url) {  
         
         $url= htmlentities($url);
         $arrayUrl= explode("/", $url);
+        $page_id=0;
+        $local_id=1;
+        $product_id="";
         foreach ($arrayUrl as $key => $value) {
             if($value=="local" and isset($arrayUrl[$key+1])){                
-                $_REQUEST["local_id"]=$arrayUrl[$key+1];
+               $local_id=$arrayUrl[$key+1];
             }            
             if($value=="product" and isset($arrayUrl[$key+1])){
-                $_REQUEST["product_id"]=$arrayUrl[$key+1];
+                $product_id=$arrayUrl[$key+1];
             }
             if($value=="page_id" and isset($arrayUrl[$key+1])){
-                $_REQUEST["page_id"]=$arrayUrl[$key+1];
+               $page_id=$arrayUrl[$key+1];
             }
         }
         $_REQUEST["actionPagesDraw"]=1; //Dibuja la pagina principal  
-        include_once "modules/main/views/pages.draw.php";
         
+        $css =  new PageConstruct($local_id,$page_id);
+        include_once "modules/main/views/pages.draw.php";
+        print($css->get_JSGeneral());
+        
+        $css->Cbody();
+        $css->Chtml();
     });
      
-    $router->post('/views', function () {       
-        include_once "modules/main/views/pages.draw.php";
-     });
+    
      
-     $router->post('/process', function () {       
+     $router->post('/processShopping', function () {       
         include_once "modules/main/process/shopping.process.php";
      });
+     
+     
              
     $router->run();
 

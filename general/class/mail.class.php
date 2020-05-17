@@ -75,9 +75,9 @@ class TS_Mail extends conexion{
     
     public function EnviarMailXPHPMailer($para,$de,$nombreRemitente, $asunto, $mensajeHTML, $Adjuntos='') {
         
-        require '../../../librerias/phpmailer/src/Exception.php';
-        require '../../../librerias/phpmailer/src/PHPMailer.php';
-        require '../../../librerias/phpmailer/src/SMTP.php';
+        require 'librerias/phpmailer/src/Exception.php';
+        require 'librerias/phpmailer/src/PHPMailer.php';
+        require 'librerias/phpmailer/src/SMTP.php';
 
         /*
         Primero, obtenemos el listado de e-mails

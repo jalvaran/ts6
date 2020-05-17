@@ -53,9 +53,11 @@
         '</div>' +
         '</div>');
         */
+    /*   
     $('.color').scrollToFixed({
         marginTop: 200
     });
+      */
     
     $('.setting-handle').click(function () {
         if ($('.setting-wrapper').css('right') === '0px') {
@@ -64,7 +66,7 @@
             $('.setting-wrapper').css('right', '0');
         }
     });
-
+  
     function store(name, val) {
         if (typeof (Storage) !== "undefined") {
             localStorage.setItem(name, val);
@@ -84,7 +86,15 @@
     function appendLink(name) {
         var $head = $("head");
         var $headlinklast = $head.find("link[rel='stylesheet']:last");
-        var linkElement = '<link rel="stylesheet" id="theme" href="dist/css/style-'+name+'.css" type="text/css">';
+        var pathname = window.location.pathname;
+
+        var arrayPath = pathname.split('/');
+
+        var myPath=""
+        for(i=4;i<=arrayPath.length;i++){
+            myPath=myPath+"../";
+        }
+        var linkElement = '<link rel="stylesheet" id="theme" href="'+myPath+'dist/css/style-'+name+'.css" type="text/css">';
         if ($headlinklast.length){
             $headlinklast.after(linkElement);
         }
@@ -173,7 +183,7 @@
     //*************************************************
     //ResponsiveMenu  *********************************
     //*************************************************
-    
+    /*
     $('.header-light').scrollToFixed({
         preFixed: function () {
             $('.header-light').addClass('hdr-fixed-light');
@@ -209,7 +219,7 @@
             $('.header-gradient').removeClass('hdr-fixed-gradient');
         }
     });
-
+    */
     $('body').on('click', '#menu-bar', function () {
         var menu = $('.menu');
         $('body').css('overflow', 'hidden');

@@ -41,6 +41,9 @@ class PageConstruct extends html_estruct_class{
             $page_id=$this->dataClient["page_initial"];
         }
         $this->dataTheme=$this->obCon->DevuelveValores("html_css_themes", "id", $this->dataClient["theme_id"]);
+        if($this->dataTheme["css"]==''){
+            $this->dataTheme["css"]="blue";
+        }
         $this->dataPage=$this->obCon->DevuelveValores("pages", "id", $page_id);
                 
         
@@ -81,6 +84,8 @@ class PageConstruct extends html_estruct_class{
                     <!-- Alertify -->
                     <link rel="stylesheet" href="'.$this->path.'assets/plugin/alertify/themes/alertify.core.css" />
                     <link rel="stylesheet" href="'.$this->path.'assets/plugin/alertify/themes/alertify.default.css" id="toggleCSS" />
+                    <!-- Select2 -->
+                    <link rel="stylesheet" href="'.$this->path.'assets/plugin/select2/css/select2.min.css" />
                     <!-- Favicon Icon -->
                     <link rel="icon" type="image/x-icon" href="'.$favicon.'" />
                     <!-- Material Design Lite Stylesheet CSS -->
@@ -102,15 +107,11 @@ class PageConstruct extends html_estruct_class{
                     <!-- Custom Main Stylesheet by Techno CSS -->
                     <link rel="stylesheet" href="'.$this->path.'dist/css/techno/ts-style.css">
                     <!-- Custom Main Stylesheet CSS -->
-                    <link rel="stylesheet" href="'.$this->path.'dist/css/style.css">
+                       <link rel="stylesheet" href="'.$this->path.'dist/css/style.css"> 
                     
+                       
                     ';
-        
-                    if(isset($this->dataTheme["css"]) and $this->dataTheme["css"]<>''){
-                        $html.='
-                                <link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
-                    }
-                    
+                            
                 $html.='
                         </head>';
                 return($html);
@@ -124,7 +125,7 @@ class PageConstruct extends html_estruct_class{
         $query=$this->obCon->Query($sql);
         while($dataMenu=$this->obCon->FetchAssoc($query)){
             $html.='<li class="menu-megamenu-li">
-                        <a id="menu_'.$dataMenu["id"].'"  class="mdl-button mdl-js-button mdl-js-ripple-effect ts_menu" data-name="'.$dataMenu["menu_name"].'" data-page_id="'.$dataMenu["page_id"].'">'.$dataMenu["menu_name"].'</a>                                    
+                        <a id="menu_'.$dataMenu["id"].'"  class="mdl-button mdl-js-button mdl-js-ripple-effect ts_menu" data-name="'.$dataMenu["menu_name"].'" data-page_id="'.$dataMenu["page_id"].'" data-local_id="'.$this->dataClient["ID"].'">'.$dataMenu["menu_name"].'</a>                                    
                     </li>';
         }
         
@@ -138,7 +139,14 @@ class PageConstruct extends html_estruct_class{
     }
     
     public function get_headerGeneral() {
-        $urlLogo=$this->path."clients/".$this->dataClient["ID"]."/images/logo-header.png";
+        $urlLogo="clients/".$this->dataClient["ID"]."/images/logo-header.png";
+        
+        if(!file_exists($urlLogo)){
+            $urlLogo=$this->path."images/domismall.png";
+        }else{
+            $urlLogo=$this->path.$urlLogo;
+        }
+        
         $html='<header id="header" class="header-'.$this->dataClient["header_class"].'">
             <div class="layer-stretch hdr">
                 <div class="tbl animated fadeInDown">
@@ -166,11 +174,17 @@ class PageConstruct extends html_estruct_class{
         $dataSliders=$this->obCon->DevuelveValores("clients_slider", "client_id", $this->dataClient["ID"]);
         
         $html="";
-        $background_image=$this->path.'clients/'.$this->dataClient["ID"].'/images/slider1.jpg';
+        $background_image='clients/'.$this->dataClient["ID"].'/images/slider1.jpg';
+        if(!file_exists($background_image)){
+            $background_image=$this->path.'images/slider-1.jpg';
+        }else{
+            $background_image=$this->path.$background_image;
+        }
+        
         //print($background_image);
         switch ($dataPage["slider_id"]){
             case 1://slider para la pagina 1 E-Comerce 1
-                $background_image=$this->path.'images/slider-1.jpg';
+                //$background_image=$this->path.'images/slider-1.jpg';
                 $html.='<div id="slider" class="slider-transparent slider-half">
                     <div class="flexslider slider-wrapper">
                         <ul class="slides">
@@ -221,7 +235,7 @@ class PageConstruct extends html_estruct_class{
                         <div class="page-ttl page-'.$this->dataClient["slider_class"].'" style="background-image: url('.$background_image.');>
                             <div class="layer-stretch">
                                 <div class="page-ttl-container">
-                                    <h1>Tienda</h1></div>';
+                                    <h1>Tienda Virtual</h1></div>';
                                     
                 
                 
@@ -237,18 +251,18 @@ class PageConstruct extends html_estruct_class{
         return($html);
         
     }
-    
-    /**
-     * Incluye los JS Generales
-     * @return type
-     */
+   
     public function get_JSGeneral() {
-        return('<!-- Alertify-->
+        $html=('<!-- Alertify-->
                 <script src="'.$this->path.'assets/plugin/alertify/lib/alertify.min.js"></script>
+                <!-- MD5 JS-->
+                <script src="'.$this->path.'general/js/md5.js"></script>    
                 <!-- Jquery Library 2.1 JavaScript-->
                 <script src="'.$this->path.'assets/plugin/jquery/jquery-2.1.4.min.js"></script>
                 <!-- Jquery Cookie JavaScript-->
-                <script src="'.$this->path.'assets/plugin/jquery_cookie/jquery.cookie.js"></script>    
+                <script src="'.$this->path.'assets/plugin/jquery_cookie/jquery.cookie.js"></script>  
+                <!-- Select 2-->
+                <script src="'.$this->path.'assets/plugin/select2/js/select2.full.min.js"></script>        
                 <!-- Popper JavaScript-->
                 <script src="'.$this->path.'assets/plugin/popper/popper.min.js"></script>
                 <!-- Bootstrap Core JavaScript-->
@@ -258,7 +272,7 @@ class PageConstruct extends html_estruct_class{
                 <!-- Animaateheading JavaScript-->
                 <script src="'.$this->path.'assets/plugin/animateheading/animateheading.js"></script>
                 <!-- Material Design Lite JavaScript-->
-                <script src="'.$this->path.'assets/plugin/material/material.min.js"></script>
+                <script src="'.$this->path.'assets/plugin/material/material.min.js"></script>  
                 <!-- Material Select Field Script -->
                 <script src="'.$this->path.'assets/plugin/material/mdl-selectfield.min.js"></script>
                 <!-- Flexslider Plugin JavaScript-->
@@ -279,13 +293,23 @@ class PageConstruct extends html_estruct_class{
                 <script src="'.$this->path.'assets/plugin/smoothscroll/smoothscroll.min.js"></script>
                 <!-- Sweetalert Plugin -->
                 <script src="'.$this->path.'assets/plugin/sweetalert/sweetalert.js"></script>
-                    <!-- Sweetalert Plugin -->
+                <!-- js del creador de paginas -->
                 <script src="'.$this->path.'modules/main/jsPages/pages.js"></script>
+                <!-- Recapcha -->
+                <script src="https://www.google.com/recaptcha/api.js?render=6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-"></script>
+                
                 <!--Custom JavaScript-->
                 <script src="'.$this->path.'general/js/general.js"></script>
                 <script src="'.$this->path.'dist/js/custom.js"></script>
                 
                 ');
+                
+                if(isset($this->dataTheme["css"]) and $this->dataTheme["css"]<>''){
+                        
+                    $html.='<link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
+                }
+                
+                return($html);
     }
     
     
@@ -314,27 +338,47 @@ class PageConstruct extends html_estruct_class{
                                                     <p class="paragraph-medium paragraph-white">'.$this->dataClient["Telefono"].'</p>
                                                 </div>
                                             </div>
+                                            <!--
                                             <div class="tbl-row">
                                                 <div class="tbl-cell"><i class="fa fa-envelope"></i></div>
                                                 <div class="tbl-cell">
                                                     <p class="paragraph-medium paragraph-white">'.$this->dataClient["Email"].'</p>
                                                 </div>
                                             </div>
+                                             -->
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6 footer-block">
-                                    <div class="footer-ttl"><p>Suscribete</p></div>
+                                    <div class="footer-ttl"><p>Contáctanos</p></div>
                                     <div class="footer-container footer-c">
                                         <div class="footer-subscribe">
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-input">
+                                                <input class="mdl-textfield__input" type="text" id="nameContact">
+                                                <label class="mdl-textfield__label" for="subscribe-email">Tú Nombre</label>
+                                                
+                                            </div>
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-input">
+                                                <input class="mdl-textfield__input" type="text" id="phoneContact">
+                                                <label class="mdl-textfield__label" for="subscribe-email">Tú Teléfono</label>
+                                                
+                                            </div>
+                                            
                                             <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-input">
                                                 <input class="mdl-textfield__input" type="text" pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$" id="subscribe-email">
                                                 <label class="mdl-textfield__label" for="subscribe-email">Tú Email</label>
                                                 <span class="mdl-textfield__error">Por favor digita un Email válido!</span>
                                             </div>
+                                            <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label form-input">
+                                                <textarea class="mdl-textfield__input" type="text" id="mensageContact"></textarea>
+                                                
+                                                
+                                                <label class="mdl-textfield__label" for="subscribe-email">Qué deseas decirnos?</label>
+                                                
+                                            </div>
                                             <div class="footer-subscribe-button">
-                                                <button class="mdl-button mdl-js-button mdl-js-ripple-effect button button-primary">Enviar</button>
+                                                <button id="btnSendContact" data-local_id="'.$this->dataClient["ID"].'" class="mdl-button mdl-js-button mdl-js-ripple-effect button button-primary">Enviar</button>
                                             </div>
                                         </div>
                                         <ul class="social-list social-list-colored footer-social">';
@@ -373,12 +417,24 @@ class PageConstruct extends html_estruct_class{
         $html=$this->get_html_init("es");
         $keywords=$this->dataClient["keywords"];
         $favicon="clients/".$this->dataClient["ID"].'/images/favicon.png';
+        if(!file_exists($favicon)){
+            $favicon="images/favicon.png";
+        }
+        
         $html.= $this->get_heads($this->dataClient["title_page"],$keywords,$favicon);
         $html.="<body>";
+        if($this->dataClient["virtual_shop"]>0){
+            $html.=$this->get_login_user_client();        
+            $html.=$this->get_modal("modal_virtual_shop", "Domi", "divModal");
+            $html.=$this->get_IconWhats("Hola te encontré en Domi y quería ");
+            $html.=$this->get_ShoppingCar();
+            $html.=$this->get_IconLogin();
+        }
         $html.='<div class="wrapper">';
         if($this->dataPage["header_enabled"]==1){
             $html.=$this->get_headerGeneral(); 
         }
+        
         $html.='<div id="divDrawPage">';
         
         $html.=$this->get_slider(); 
@@ -393,11 +449,13 @@ class PageConstruct extends html_estruct_class{
         if($this->dataPage["id"]==3){//si se solicita la tienda virtual
             $html.=($this->get_virtual_shop());
         }
+        
         $html.=$this->get_footer();
         
         $html.='</div>'; //end wrapper
         
-        $html.=$this->get_JSGeneral();
+        //$html.=$this->get_JSGeneral();
+        
         return($html);
     }
     
@@ -862,10 +920,7 @@ class PageConstruct extends html_estruct_class{
     
     public function get_virtual_shop() {
         $html="";
-        $html.=$this->get_modal("modal_virtual_shop", "Domi", "divModal");
-        $html.=$this->get_IconWhats("Hola te encontré en Domi y quería ");
-        $html.=$this->get_ShoppingCar();
-        $html.=$this->get_IconLogin();
+        
         switch ($this->dataClient["virtual_shop"]) {
             
             case 1://Dibuja la primer opcion de tienda virtual
@@ -908,7 +963,7 @@ class PageConstruct extends html_estruct_class{
         return($html);
     }
     
-    public function get_modal($id,$Titulo,$idDivContent,$Tipo=2) {
+    public function get_modal($id,$Titulo,$idDivContent,$Tipo=2,$buttonClose=1,$htmlBody="") {
         $ClassLarge="";
         if($Tipo==1){
             $ClassLarge="modal-sm";
@@ -919,7 +974,7 @@ class PageConstruct extends html_estruct_class{
         if($Tipo==3){
             $ClassLarge="modal-xl";
         }
-        $html=('<div class="modal fade" id="'.$id.'">
+        $html='<div class="modal fade" id="'.$id.'">
                     <div class="modal-dialog modal-dialog-scrollable '.$ClassLarge.'">
                       <div class="modal-content">
 
@@ -931,17 +986,19 @@ class PageConstruct extends html_estruct_class{
 
                         <!-- Modal body -->
                         <div id='.$idDivContent.' class="modal-body" >
-                          
-                        </div>
-
+                            '.$htmlBody.'
+                        </div>';
+            if($buttonClose==1){
+            $html.='
                         <!-- Modal footer -->
                         <div class="modal-footer">
                           <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
-                        </div>
-
+                        </div>';
+            }
+            $html.='
                       </div>
                     </div>
-                  </div>');
+                  </div>';
         return($html);
     }
     
@@ -950,15 +1007,193 @@ class PageConstruct extends html_estruct_class{
         return('<a id="IconWhatsApp" class="whats-domi-icon" style="color:'.$Color.';" target="_blank" href="https://api.whatsapp.com/send?phone='.$Telefono.'&text='.$Mensaje.'" ><img src="'.$this->path.'images/whatsapp.png" style="width:60px"></img></a>');
     }
     
-    public function get_ShoppingCar($id="aShoppingCAr",$idSp="spItemsCar",$idSpTotal="spTotalCar",$Color="#d91d1d") {
-        return('<a id="'.$id.'" class="cart-icon" ><img src="'.$this->path.'images/shoping3.png" style="width:60px;">      
+    public function get_ShoppingCar($id="aShoppingCar",$idSp="spItemsCar",$idSpTotal="spTotalCar",$Color="#d91d1d") {
+        return('<a id="'.$id.'" data-local_id="'.$this->dataClient["ID"].'" class="cart-icon" ><img src="'.$this->path.'images/shoping3.png" style="width:60px;">      
             <span class="cart-icon-sp" id="'.$idSp.'">0</span> 
-            <span class="cart-icon-sp-total" id="'.$idSpTotal.'">999.990</span>     
+            <span class="cart-icon-sp-total" id="'.$idSpTotal.'">0</span>     
         </a>');
     }
     
     public function get_IconLogin($id="IconLogin",$Color="green") {
         return('<a id="'.$id.'" class="login-domi-icon fa fa-user-circle"  style="color:'.$Color.';"></a>');
+    }
+    
+    public function get_shop_order($idClientUser) {
+        $local_id=$this->dataClient["ID"];
+        $sql="SELECT t1.*
+                    FROM pedidos t1                     
+                    WHERE t1.cliente_id='$idClientUser' AND local_id='$local_id' AND t1.Estado=1"; 
+        
+        $query=$this->obCon->Query($sql);
+        $dataOrder= $this->obCon->FetchAssoc($query);
+        $totalOrder=0;
+        
+        $html='<div class="panel panel-default">
+                    <div class="panel-head">
+                        <div class="panel-title">Pedido para: <small class="text-muted">'.$this->dataClient["Nombre"].'</small></div>
+                    </div>
+                    <div class="panel-wrapper">
+                        <div class="">
+                            
+                        ';
+        
+        $html.='<ul class="menu-cart">'; 
+        $idPedido=$dataOrder["ID"];
+        $sql="SELECT t1.*,t2.Nombre,(SELECT t3.Ruta FROM productos_servicios_imagenes t3 WHERE t3.idProducto=t1.product_id LIMIT 1) as Ruta  
+                         FROM pedidos_items t1 INNER JOIN productos_servicios t2 ON t1.product_id=t2.ID
+                         
+                            WHERE t1.pedido_id='$idPedido' ";
+        $query=$this->obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], "");
+        
+        while($dataItemsOrder=$this->obCon->FetchAssoc($query)){
+            $totalOrder=$totalOrder+$dataItemsOrder["Total"];
+            $html.='
+                    <li class="cart-overview">
+                        <a class="row">
+                            <div class="col-4 pr-0 cart-img">
+                                <img src="'.$this->path.str_replace("../", "", $dataItemsOrder["Ruta"]).'" alt="">
+                            </div>
+                            <div class="col-8 cart-details">
+                                <span class="title">'.$dataItemsOrder["Nombre"].'</span>
+                                <span class="price">$'.number_format($dataItemsOrder["ValorUnitario"]).'</span>
+                                <span class="qty">Cantidad - '.number_format($dataItemsOrder["Cantidad"]).'</span>
+                                <span class="price">$'.number_format($dataItemsOrder["Total"]).'</span>
+                                <div class="cart-remove del-item" data-local_id="'.$this->dataClient["ID"].'" data-item_id="'.$dataItemsOrder["ID"].'"  ><i class="icon-close" style="font-size:25px;color:red"></i></div>
+                            </div>
+                        </a>
+                    </li>';
+        }
+        
+                    
+        $html.='    <li class="row align-items-center">
+                        <div class="col-6">
+                            
+                        </div>
+                        <div class="col-6 text-right">
+                            <p class="font-dosis font-20 m-0">Total : $'.number_format($totalOrder).'</p>
+                        </div>
+                    </li>
+                </ul></div>
+                    </div>';
+        
+        if($totalOrder>0){
+        $html.='
+                    <div class="panel-footer">
+                        <div class="row">
+                            <div class="col-md-12">  
+                                <div class="panel-head">
+                                   <div class="panel-title">Dinos quien eres:</div>
+                               </div>
+                               
+                               <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="background-color:#17277c;color:white"><li class="far fa-address-card"></li></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="NombreCliente" placeholder="Nombre" style="font-size:25px;">
+                                </div>
+                                <br>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="background-color:#17277c;color:white"><li class="fa fa-home"></li></span>
+                                    </div>
+                                    <input type="text" class="form-control" id="DireccionCliente" placeholder="Dirección" style="font-size:25px;">
+                                </div>
+                                <br>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text" style="background-color:#17277c;color:white;"><li class="fa fa-phone"></li></span>
+                                    </div>
+                                    <input type="number" class="form-control" id="Telefono" placeholder="Teléfono" style="font-size:25px;-webkit-appearance: textfield !important;margin: 0;-moz-appearance:textfield !important;" >
+                                </div>
+                                
+                                
+                                <br>
+                                <textarea id="ObservacionesPedido" class="form-control" placeholder="Observaciones" style="font-size:25px;"></textarea>
+                                <br>
+                                <div class="custom-control custom-checkbox custom-checkbox-1 mb-3" >
+                                    <input type="checkbox" class="custom-control-input" id="chRegistrarse" >
+                                    <label class="custom-control-label" for="chRegistrarse" style="font-size:20px">Deseo registrarme</label>
+                                </div>
+                                
+                                <div id="divRegistrarse" style="display:none;">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text ti-email" style="background-color:#0d2ccc;color:white"></span>
+                                        </div>
+                                        <input type="mail" class="form-control" id="Email" placeholder="Email" style="font-size:25px;">
+                                    </div>
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text icon-lock" style="background-color:#0d2ccc;color:white"></span>
+                                        </div>
+                                        <input type="password" class="form-control" id="Password" placeholder="Contraseña" style="font-size:25px;">
+                                    </div>
+
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text icon-lock" style="background-color:#0d2ccc;color:white;"></span>
+                                        </div>
+                                        <input type="password" class="form-control" id="PasswordConfirm" placeholder="Confirma tu Contraseña" style="font-size:25px;-webkit-appearance: textfield !important;margin: 0;-moz-appearance:textfield !important;" >
+                                    </div>
+                                </div>
+                               
+                            </div>   
+                            
+                            <div class="col-md-6"></div>
+                            <div class="col-md-6 text-right">
+                                <br>
+                                <button id="tsSendOrder" data-pedido_id="'.$idPedido.'" class="btn btn-success btn-pill btn-sm" style="font-size:20px;">Enviar <li class="fab fa-telegram-plane"></li></button>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>';
+        
+        }
+        
+        return($html);
+    }
+    
+    public function get_login_user_client() {
+        $htmlBody=' 
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text ti-email" style="background-color:#0d2ccc;color:white"></span>
+                        </div>
+                        <input type="mail" class="form-control" id="emailLogin" placeholder="Email" style="font-size:25px;">
+                    </div>
+                    <br>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text icon-lock" style="background-color:#0d2ccc;color:white"></span>
+                        </div>
+                        <input type="password" class="form-control" id="passLogin" placeholder="Contraseña" style="font-size:25px;">
+                    </div>
+                    
+                    <div class="pt-4 text-center">
+                        <button id="btnLoginUser" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent button button-dark" data-upgraded=",MaterialButton,MaterialRipple">
+                            Ingresa
+                                <span class="mdl-button__ripple-container">
+                                    <span class="mdl-ripple is-animating" style="width: 237.451px; height: 237.451px; transform: translate(-50%, -50%) translate(58px, 28px);">
+                                    </span>
+                                </span>
+                        </button>
+                    </div>
+
+                    ';
+        
+        
+        
+        $html=$this->get_modal("modalLogin", "Logueate", "div_modal_login_user_client", 3, 0, $htmlBody);
+        return($html);
+    }
+    
+    
+    public function get_map() {
+        $html='<div id="map"></div><iframe id="map" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5393313827085!2d-76.30459495422376!3d3.891650978592515!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e39e66f306f6e05%3A0x8f83f20bf093dd2b!2sCl.%206%20Sur%20%2313%2C%20Guadalajara%20de%20Buga%2C%20Valle%20del%20Cauca!5e0!3m2!1ses-419!2sco!4v1589736162194!5m2!1ses-419!2sco" width="600" height="450" frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false" tabindex="0"></iframe>';
+    
+        return($html);
     }
     
     

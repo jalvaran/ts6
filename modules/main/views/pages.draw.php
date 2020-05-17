@@ -29,21 +29,13 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
     switch($_REQUEST["actionPagesDraw"]){
        
         case 1://Dibuja una pagina
-            if(isset($_REQUEST["page_id"])){
-                $page_id=$obCon->normalizar($_REQUEST["page_id"]);
-            }else{
-                $page_id=0;
-            }
-            
-            $css =  new PageConstruct($local_id,$page_id);
+              
             if($css->dataClient["ID"]==''){
                 include_once "pages/404.php";
                 exit();
             }
             print($css->get_page());
-            print("<script>local_id=$local_id;<script>");
-            $css->Cbody();
-            $css->Chtml();
+            
             
         break;//Fin caso 1
         
@@ -86,6 +78,15 @@ if(!empty($_REQUEST["actionPagesDraw"])){// se verifica si el indice accion es d
             
             print($css->get_slider_product($dataProduct));
         break;//Fin caso 4
+    
+        case 5://Dibuja una orden de pedido
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            $idClientUser=$obCon->normalizar($_REQUEST["idClientUser"]);            
+            $local_id=$obCon->normalizar($_REQUEST["local_id"]); 
+            
+            $css =  new PageConstruct($local_id,3,$path);  
+            print($css->get_shop_order($idClientUser));
+        break;//Fin caso 5
         
         
           

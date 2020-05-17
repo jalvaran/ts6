@@ -15,3 +15,39 @@ function closeModal(idModal){
     $('body').removeClass('modal-open');//eliminamos la clase del body para poder hacer scroll
     $('.modal-backdrop').remove();//eliminamos el backdrop del modal
 }
+
+function initFormMD(){
+    $('.mdl-textfield').on('blur',function(e) {
+      this.element_.classList.remove(this.CssClasses_.IS_FOCUSED);
+    });
+
+    $('.mdl-textfield').on('focus',function(e) {
+      this.element_.classList.add(this.CssClasses_.IS_FOCUSED);
+    });
+
+    $('.mdl-textfield').on('input',function(e) {
+      this.checkDisabled(), this.checkValidity(), this.checkDirty(), this.checkFocus();
+    });
+
+    $('.mdl-textfield').on('reset',function(e) {
+      this.updateClasses_();
+    });
+    
+}
+
+function MuestraOcultaXID(id,Mostrar){
+    if(Mostrar==1){
+        document.getElementById(id).style.display="block";
+    }else{
+        document.getElementById(id).style.display="none";
+    }
+}
+
+function MarqueErrorElemento(idElemento){
+    console.log(idElemento);
+    if(idElemento==undefined){
+       return; 
+    }
+    document.getElementById(idElemento).style.backgroundColor="pink";
+    document.getElementById(idElemento).focus();
+}

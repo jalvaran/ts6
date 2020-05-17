@@ -58,7 +58,7 @@ function getIdClientUser(){
     
     var form_data = new FormData();
         form_data.append('Accion', '8'); 
-        urlQuery=URLAjax+'process';        
+        urlQuery=URLAjax+'processShopping';        
         $.ajax({
         url: urlQuery,
         //dataType: 'json',
@@ -71,7 +71,7 @@ function getIdClientUser(){
             
             var respuestas = data.split(';');
             if(respuestas[0]=="OK"){   
-                console.log("Entra a verificar "+respuestas[1]);
+                
                 idClientUser=respuestas[1];
                 ActualizarTotalItemsCarro(idClientUser);
             }else{
@@ -83,7 +83,7 @@ function getIdClientUser(){
                     $.cookie("idClientUser",idClientUser,{expires: 9999});
                     
                 }
-                //ActualizarTotalItemsCarro(idClientUser);
+                updateTotalsCar();
             }
                     
         },
@@ -94,6 +94,55 @@ function getIdClientUser(){
           }
       });
       
+    
+}
+
+function delete_item_order(local_id,item_id){
+     
+    var form_data = new FormData();
+        form_data.append('ActionShopping', '4'); 
+        form_data.append('local_id', local_id);
+        form_data.append('item_id', item_id);
+              
+        urlQuery=URLAjax+'processShopping';        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        beforeSend: function() {
+            $('#loader').fadeIn();
+        },
+        complete: function(){
+            $('#loader').fadeOut();
+        },
+        success: function(data){
+            
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){                
+                alertify.error(respuestas[1]);                
+                drawShoppingOrder(local_id);
+                updateTotalsCar();
+                
+               
+            }else if(respuestas[0]=="E1"){  
+                alertify.error(respuestas[1]);
+                MarqueErrorElemento(respuestas[2]);
+                
+            }else{
+                alertify.alert(data);                
+            }
+                    
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            $('#loader').fadeOut();
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
     
 }
 
@@ -116,7 +165,7 @@ function addItemShoppingCar(local_id,product_id){
         form_data.append('Cantidad', Cantidad);
         
         
-        urlQuery=URLAjax+'process';        
+        urlQuery=URLAjax+'processShopping';        
         $.ajax({
         url: urlQuery,
         //dataType: 'json',
@@ -134,10 +183,10 @@ function addItemShoppingCar(local_id,product_id){
         success: function(data){
             document.getElementById(idBoton).disabled=false;
             var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
-            if(respuestas[0]=="OK"){                
+            if(respuestas[0]=="OK"){  
+                updateTotalsCar();
                 alertify.success(respuestas[1],1000);
-                document.getElementById('spItemsCar').innerHTML=respuestas[2];
-                document.getElementById('spTotalCar').innerHTML=respuestas[4];
+                
                 
             }else if(respuestas[0]=="E1"){  
                 alertify.error(respuestas[1]);
@@ -157,14 +206,17 @@ function addItemShoppingCar(local_id,product_id){
     
 }
 
-function ActualizarTotalItemsCarro(user_id){
+function updateTotalsCar(){
     
+    var local_id=$('#aShoppingCar').data("local_id");
     var form_data = new FormData();
-        form_data.append('Accion', '2'); 
-        form_data.append('user_id', user_id);
+        form_data.append('ActionShopping', '2'); 
+        form_data.append('user_id', idClientUser);
+        form_data.append('local_id', local_id);
                 
+        urlQuery=URLAjax+'processShopping';        
         $.ajax({
-        url: './procesadores/main.process.php',
+        url: urlQuery,
         //dataType: 'json',
         cache: false,
         contentType: false,
@@ -178,6 +230,7 @@ function ActualizarTotalItemsCarro(user_id){
                 if(respuestas[1]==''){
                     respuestas[1]=0;
                 }
+                
                 document.getElementById('spItemsCar').innerHTML=respuestas[1];
                 document.getElementById('spTotalCar').innerHTML=respuestas[3];
                 if(document.getElementById('spTotalFormPedido')){
@@ -224,7 +277,8 @@ function drawPageContent(page_id,local_id){
         complete: function(){
             $('#loader').fadeOut();
         },
-        success: function(data){            
+        success: function(data){    
+            
             document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
             
             $(".flexslider").flexslider();
@@ -248,7 +302,11 @@ function drawPageContent(page_id,local_id){
 }
 
 function goUpPage(){
-    $("html, body").animate({ scrollTop: $("#searchProducts").offset().top }, 600);
+    var top_go=0;
+    if($("#searchProducts").length>0){
+        var top_go=$("#searchProducts").offset().top;
+    }
+    $("html, body").animate({ scrollTop: top_go }, 600);
     return false;
 }
 
@@ -305,9 +363,45 @@ function add_events_virtual_shop(){
         addItemShoppingCar($(this).data("local_id"),$(this).data("product_id")); 
     });
     
-    
-    
+        
 }
+
+function add_events_virtual_shop_order(){
+    
+    $('.del-item').on('click',function () {
+        delete_item_order($(this).data("local_id"),$(this).data("item_id"));
+    });
+    
+    $('#tsSendOrder').on('click',function () {
+        ConfimarSolicitarPedidos($(this).data("pedido_id"),idClientUser);
+    });
+    
+    $('#chRegistrarse').on('change',function () {
+        
+        MostrarCamposRegistro();
+    });
+    
+    $('#Telefono').on('wheel',function () {
+        
+        $(this).blur();
+    });
+    
+    
+              
+}
+
+function MostrarCamposRegistro(){
+    var chRegistro=document.getElementById('chRegistrarse').checked;
+    
+    if(chRegistro==false){
+        MuestraOcultaXID("divRegistrarse",0);
+                
+    }else{
+        MuestraOcultaXID("divRegistrarse",1);
+        
+    }
+    
+} 
 
 function CambieCantidad(idCaja,operation){
     
@@ -344,10 +438,72 @@ $(document).ready(function(){
         drawSliderProduct($(this).data("local_id"),$(this).data("dataproduct"));
     });
     
+    $('#aShoppingCar').on('click',function () {
+        drawShoppingOrder($(this).data("local_id")); 
+    });
+    
+    $('#IconLogin').on('click',function () {
+        openModal('modalLogin');
+    });
+    
+    $('#btnLoginUser').on('click',function () {
+        initLoginUser();
+    });
+    
+    $('#btnSendContact').on('click',function () {
+        initSendContact();
+    });
 } );
 
+
+function drawShoppingOrder(local_id){
+    
+    openModal('modal_virtual_shop');
+    var idDiv="divModal";
+       
+    urlQuery=URLAjax+'views';    
+    var form_data = new FormData();
+        form_data.append('actionPagesDraw', 5);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
+        
+        form_data.append('local_id', local_id);
+        form_data.append('myPath', myPath);        
+        form_data.append('idClientUser', idClientUser);
+        
+        
+       $.ajax({// se arma un objecto por medio de ajax  
+        url: urlQuery,// se indica donde llegara la informacion del objecto
+        
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post', // se especifica que metodo de envio se utilizara normalmente y por seguridad se utiliza el post
+        beforeSend: function() {
+            $('#loader').fadeIn();
+            
+        },
+        complete: function(){
+            $('#loader').fadeOut();
+        },
+        success: function(data){
+            
+            document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
+            
+            add_events_virtual_shop_order();
+            AutocomplementarDatosCliente();
+            
+        },
+        error: function (xhr, ajaxOptions, thrownError) {// si hay error se ejecuta la funcion
+            $('#loader').fadeOut();
+            var alertMensanje='<div class="alert alert-danger mt-3"><h4 class="alert-heading">Error!</h4><p>Parece que no hay conexión con el servidor.</p><hr><p class="mb-0">Intentalo de nuevo.</p></div>';
+            document.getElementById(idDiv).innerHTML=alertMensanje;
+            swal("Error de Conexión");
+          }
+      });
+}
+
 function drawSliderProduct(local_id,dataProduct){
-    console.log(dataProduct)
+    
     openModal('modal_virtual_shop');
     var idDiv="divModal";
        
@@ -446,5 +602,273 @@ function drawMoreProducts(page,local_id){
           }
       });
 }
+
+function ConfimarSolicitarPedidos(pedido_id,idClientUser){
+    
+    alertify.confirm('Seguro que desea Realizar el pedido? ',
+        function (e) {
+            if (e) {
+               
+                grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'homepage'}).then(function(token) {
+                     CrearPedido(idClientUser,token);
+                });
+                
+                CrearPedido(idClientUser,'');
+            }else{
+                alertify.error("Se canceló el proceso");
+                return;
+            }
+        });
+
+}
+
+
+function CrearPedido(idClientUser,token){
+    var local_id=$('#aShoppingCar').data("local_id");
+    var pedido_id=$('#tsSendOrder').data("pedido_id");
+    var idBoton='tsSendOrder';
+    document.getElementById(idBoton).disabled=true;
+    document.getElementById(idBoton).value="Enviando...";
+    var NombreCliente=document.getElementById('NombreCliente').value;
+    var DireccionCliente=document.getElementById('DireccionCliente').value;
+    var Telefono=document.getElementById('Telefono').value;
+    var ObservacionesPedido=document.getElementById('ObservacionesPedido').value;
+    var chRegistrarse=document.getElementById('chRegistrarse').checked;
+    var Email=document.getElementById('Email').value;
+    var Password=document.getElementById('Password').value;
+    var PasswordConfirm=document.getElementById('PasswordConfirm').value;
+    var idDiv="divModal";
+        
+    var form_data = new FormData();
+        form_data.append('ActionShopping', '5'); 
+        form_data.append('NombreCliente', NombreCliente);
+        form_data.append('DireccionCliente', DireccionCliente);
+        form_data.append('Telefono', Telefono);
+        form_data.append('ObservacionesPedido', ObservacionesPedido);
+        form_data.append('idUserClient', idClientUser);
+        form_data.append('chRegistrarse', chRegistrarse);
+        form_data.append('Email', Email);
+        form_data.append('Password', Password);
+        form_data.append('PasswordConfirm', PasswordConfirm);
+        form_data.append('token', token);
+        form_data.append('action', 'homepage');
+        form_data.append('local_id', local_id);
+        form_data.append('pedido_id', pedido_id);
+        
+        urlQuery=URLAjax+'processShopping';        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        success: function(data){
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Solicitar";
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){ 
+                alertify.alert(respuestas[1]);
+                drawShoppingOrder(local_id);
+                updateTotalsCar();
+            }else if(respuestas[0]=="E1"){  
+                alertify.error(respuestas[1]);
+                MarqueErrorElemento(respuestas[2]);
+            }else{
+                alertify.alert(data);                
+            }
+                    
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Solicitar";
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
+    
+}
+
+
+function initLoginUser(){
+   
+    grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'login'}).then(function(token) {
+            LoginUser(token);
+       });
+       
+    
+    
+}
+
+function LoginUser(token){
+    var idBoton='btnLoginUser';
+    document.getElementById(idBoton).disabled=true;
+    document.getElementById(idBoton).value="Entrando...";
+    var emailLogin=document.getElementById('emailLogin').value;
+    var passLogin=CryptoJS.MD5($("#passLogin").val());
+    
+    var idDiv="divMain";
+        
+    var form_data = new FormData();
+        form_data.append('ActionShopping', '10'); 
+        form_data.append('emailLogin', emailLogin);
+        form_data.append('passLogin', passLogin);        
+        form_data.append('token', token);
+        form_data.append('action', 'login');
+                        
+        urlQuery=URLAjax+'processShopping';        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        success: function(data){
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Entrar";
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){ 
+                alertify.success(respuestas[1]);
+                idClientUser=respuestas[2];
+                $.cookie("idClientUser",idClientUser,{expires: 9999});                
+                $('#emailLogin').val('');
+                $('#passLogin').val('');
+                closeModal('modalLogin');               
+                updateTotalsCar(idClientUser);
+                
+            }else if(respuestas[0]=="E1"){  
+                alertify.error(respuestas[1]);
+                MarqueErrorElemento(respuestas[2]);
+            }else{
+                alertify.alert(data);                
+            }
+                    
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Solicitar";
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
+    
+}
+
+
+function initSendContact(){
+   /*
+    grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'contact'}).then(function(token) {
+            Contact(token);
+       });
+      */ 
+    Contact('');
+    
+}
+
+function Contact(token){
+    var idBoton='btnSendContact';
+    document.getElementById(idBoton).disabled=true;
+    document.getElementById(idBoton).value="Enviando...";
+    var nameContact=document.getElementById('nameContact').value;
+    var email=document.getElementById('subscribe-email').value;
+    var mensageContact=document.getElementById('mensageContact').value;
+    var phone=document.getElementById('phoneContact').value;
+    var local_id= $('#btnSendContact').data("local_id");       
+    var form_data = new FormData();
+        form_data.append('ActionShopping', '11'); 
+        form_data.append('local_id', local_id);
+        form_data.append('nameContact', nameContact);
+        form_data.append('email', email);
+        form_data.append('phone', phone);
+        form_data.append('mensageContact', mensageContact);
+        form_data.append('token', token);
+        form_data.append('action', 'contact');
+                        
+        urlQuery=URLAjax+'processShopping';        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        success: function(data){
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Enviar";
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){ 
+                alertify.success(respuestas[1]);
+                          
+                $('#nameContact').val('');
+                $('#subscribe-email').val('');
+                $('#mensageContact').val('');
+                $('#phoneContact').val('');
+                               
+            }else if(respuestas[0]=="E1"){  
+                alertify.error(respuestas[1]);
+                //MarqueErrorElemento(respuestas[2]);
+            }else{
+                alertify.alert(data);                
+            }
+                    
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            document.getElementById(idBoton).disabled=false;
+            document.getElementById(idBoton).value="Enviar";
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
+    
+}
+
+
+function AutocomplementarDatosCliente(){
+    
+    if(!$("#NombreCliente").length){
+        return;
+    }
+    
+       
+    var form_data = new FormData();
+        form_data.append('ActionShopping', '7'); 
+        
+        form_data.append('idUserClient', idClientUser);
+                        
+        urlQuery=URLAjax+'processShopping';        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        success: function(data){
+            
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){ 
+                
+                document.getElementById('NombreCliente').value=respuestas[1];
+                document.getElementById('DireccionCliente').value=respuestas[2];
+                document.getElementById('Telefono').value=(respuestas[3]);
+                
+                
+                
+               
+            }          
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
+}
+
 spinnerCreate();
 buttonUpCreate();
