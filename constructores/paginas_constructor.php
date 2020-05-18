@@ -44,8 +44,11 @@ class PageConstruct extends html_estruct_class{
         if($this->dataTheme["css"]==''){
             $this->dataTheme["css"]="blue";
         }
+        
         $this->dataPage=$this->obCon->DevuelveValores("pages", "id", $page_id);
-                
+        if($page_id==1000){
+            $this->dataPage["id"]=1000;
+        }        
         
     }  
     
@@ -131,7 +134,7 @@ class PageConstruct extends html_estruct_class{
         
 
         $html.=' <li>
-                    <a id="btnLogin" class="mdl-button mdl-js-button mdl-js-ripple-effect hdr-search" href="#"><i class="icon-login"></i></a>
+                    <a id="iconLoginAdmin" class="mdl-button mdl-js-button mdl-js-ripple-effect hdr-search" href="#"><i class="icon-login"></i></a>
                 </li>
                 <li class="mobile-menu-close"><i class="fa fa-times"></i></li>
                 </ul>';
@@ -295,6 +298,7 @@ class PageConstruct extends html_estruct_class{
                 <script src="'.$this->path.'assets/plugin/sweetalert/sweetalert.js"></script>
                 <!-- js del creador de paginas -->
                 <script src="'.$this->path.'modules/main/jsPages/pages.js"></script>
+                    
                 <!-- Recapcha -->
                 <script src="https://www.google.com/recaptcha/api.js?render=6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-"></script>
                 
@@ -308,7 +312,12 @@ class PageConstruct extends html_estruct_class{
                         
                     $html.='<link rel="stylesheet" href="'.$this->path.'dist/css/style-'.$this->dataTheme["css"].'.css">';
                 }
-                
+                if($this->dataPage["id"]==1000){
+                    $html.='<!-- js del administrador de paginas -->
+                            <script src="'.$this->path.'modules/admin/jsPages/admin.js"></script>
+                                <!-- js del migraciones de base de datos -->
+                            <script src="'.$this->path.'modules/admin/jsPages/migrations.js"></script>';
+                }
                 return($html);
     }
     
@@ -431,9 +440,9 @@ class PageConstruct extends html_estruct_class{
             $html.=$this->get_IconLogin();
         }
         $html.='<div class="wrapper">';
-        if($this->dataPage["header_enabled"]==1){
+        //if($this->dataPage["header_enabled"]==1){
             $html.=$this->get_headerGeneral(); 
-        }
+        //}
         
         $html.='<div id="divDrawPage">';
         
@@ -1172,7 +1181,7 @@ class PageConstruct extends html_estruct_class{
                     </div>
                     
                     <div class="pt-4 text-center">
-                        <button id="btnLoginUser" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent button button-dark" data-upgraded=",MaterialButton,MaterialRipple">
+                        <button id="btnLoginUser" data-type_login="1" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent button button-dark" data-upgraded=",MaterialButton,MaterialRipple">
                             Ingresa
                                 <span class="mdl-button__ripple-container">
                                     <span class="mdl-ripple is-animating" style="width: 237.451px; height: 237.451px; transform: translate(-50%, -50%) translate(58px, 28px);">

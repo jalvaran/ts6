@@ -83,7 +83,10 @@ function getIdClientUser(){
                     $.cookie("idClientUser",idClientUser,{expires: 9999});
                     
                 }
-                updateTotalsCar();
+                if($('#aShoppingCar').length){
+                    updateTotalsCar();
+                }
+                
             }
                     
         },
@@ -443,11 +446,26 @@ $(document).ready(function(){
     });
     
     $('#IconLogin').on('click',function () {
+        $("#btnLoginUser").data("type_login","1");
         openModal('modalLogin');
+        
+    });
+    
+    $('#iconLoginAdmin').on('click',function () {
+        $("#btnLoginUser").data("type_login","2");
+        openModal('modalLogin');
+        
     });
     
     $('#btnLoginUser').on('click',function () {
-        initLoginUser();
+        if($(this).data("type_login")==1){
+            console.log("Entra a loguear usuario");
+            initLoginUser();
+        }
+        if($(this).data("type_login")==2){
+            console.log("Entra a loguear administrador");
+            initLoginAdmin();
+        }
     });
     
     $('#btnSendContact').on('click',function () {
@@ -692,13 +710,13 @@ function CrearPedido(idClientUser,token){
 
 
 function initLoginUser(){
-   
+
     grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'login'}).then(function(token) {
             LoginUser(token);
        });
        
     
-    
+   // LoginUser('');
 }
 
 function LoginUser(token){
@@ -759,12 +777,12 @@ function LoginUser(token){
 
 
 function initSendContact(){
-   /*
+ 
     grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'contact'}).then(function(token) {
             Contact(token);
        });
-      */ 
-    Contact('');
+     
+    
     
 }
 
@@ -869,6 +887,67 @@ function AutocomplementarDatosCliente(){
           }
       });
 }
+
+function initLoginAdmin(){
+    /*
+    grecaptcha.execute('6LdoC-gUAAAAADi7iGr_b8WtxMijj24V8v-dAtB-', {action: 'loginAdmin'}).then(function(token) {
+            LoginAdmin(token);
+       });
+      */ 
+    
+    LoginAdmin('');
+}
+
+function LoginAdmin(token){
+        
+    var user_domi=document.getElementById("emailLogin").value;
+    var pw_domi=document.getElementById("passLogin").value;
+    
+    var form_data = new FormData();
+        form_data.append('actionAdmin', '1'); 
+        form_data.append('user_domi', user_domi);
+        form_data.append('pw_domi', pw_domi);
+        form_data.append('Token_user', idClientUser);
+        form_data.append('token', token);
+        form_data.append('action', 'loginAdmin');
+        
+        urlQuery=URLAjax+'processAdminShop';
+        
+        $.ajax({
+        url: urlQuery,
+        //dataType: 'json',
+        cache: false,
+        contentType: false,
+        processData: false,
+        data: form_data,
+        type: 'post',
+        success: function(data){
+            
+            var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
+            if(respuestas[0]=="OK"){ 
+                
+                var urlAdmin = pathname+"admin"
+                window.open(urlAdmin);
+                $('#emailLogin').val('');
+                $('#passLogin').val('');
+                closeModal('modalLogin'); 
+                
+            }else if(respuestas[0]=="E1"){  
+                alertify.error(respuestas[1]);
+                MarqueErrorElemento(respuestas[2]);
+            }else{
+                alertify.alert(data);                
+            }
+                    
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            
+            alert(xhr.status);
+            alert(thrownError);
+          }
+      });
+}
+
 
 spinnerCreate();
 buttonUpCreate();
