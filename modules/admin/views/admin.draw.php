@@ -38,17 +38,12 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
                 exit();
             }
             $css =  new AdminConstruct($local_id,0,$path);
-            $html="<div class='panel'>";
-            $html.='<div class="panel-head">
-                        <h5 class="panel-title">Lista de Locales</h5> 
-                        <div class="text-right"><strong>EJECUTAR MIGRACIONES</strong> <button id="btnMigrates" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-error m-1" data-upgraded=",MaterialButton"><i class="fa fa-cogs"></i></button></div>
-                    </div>';
-            $html.='<div class="panel-body">';
+            
             $Limit=20;
                        
             $DatosLocal=$css->dataClient; 
-            if(isset($_REQUEST["Page"])){
-                $Page=$obCon->normalizar($_REQUEST["Page"]);
+            if(isset($_REQUEST["page"])){
+                $Page=$obCon->normalizar($_REQUEST["page"]);
             }else{
                 $Page=1;
             }
@@ -70,24 +65,39 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
             
             $PuntoInicio = ($Page * $Limit) - $Limit;
             
-            $sql = "SELECT COUNT(t1.ID) as Items 
+            $sql = "SELECT COUNT(t1.ID) as Items,SUM(Tarifa) as TotalTarifa  
                    FROM locales t1 $Condicion;";
             
             $Consulta2=$obCon->QueryExterno($sql, HOST, USER, PW, DB, "");
             $totales = $obCon->FetchAssoc($Consulta2);
             $ResultadosTotales = $totales['Items'];
-            
-            if($ResultadosTotales>$Limit){
+            $TotalTarifa = $totales['TotalTarifa'];
+            $html="<div class='panel'>";
+            $html.='<div class="panel-head">
+                        <h5 class="panel-title">Lista de Locales</h5> 
+                        <div class="text-right"><strong>EJECUTAR MIGRACIONES</strong> <button id="btnMigrates" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-error m-1" data-upgraded=",MaterialButton"><i class="fa fa-cogs"></i></button></div>
+                    </div>';
+            $html.='<div class="panel-body">';
+            $htmlNavMinus="";
+            $htmlNavMore="";
+            //if($ResultadosTotales>$Limit){
                 $TotalPaginas= ceil($ResultadosTotales/$Limit);
+                $disabled="disabled";
                 if($Page>1){
-                    $js="onclick=pageMinusAdmin();";
-                    //$css->botonNavegacion($js, "green", "pageNav-pageBack-icon mdi mdi-arrow-left-bold", "PageMinus");
+                    $disabled="";                   
                 }
+                $Pagego=$Page-1;
+                $htmlNavMinus='<button '.$disabled.' id="btnPageDown" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-left" ></li></button>';
+                $disabled="disabled";
                 if($ResultadosTotales>($PuntoInicio+$Limit)){
-                    $js="onclick=pageAddAdmin();";
-                    //$css->botonNavegacion($js, "green", "pageNav-pageForward-icon mdi mdi-arrow-right-bold", "PageAdd");
+                    
+                    $disabled="";  
                 }
-            }
+                $Pagego=$Page+1;
+                $htmlNavMore='<button '.$disabled.' id="btnPageUp" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-right" ></li></button>';
+                $htmlNavMore.='<br><strong class="text-muted">Página '.$Page.' de '.$TotalPaginas.'</strong>';
+                
+            //}
             
             $sql="SELECT ID, Nombre,Direccion,Telefono,Email,Password, Estado FROM locales $Condicion ORDER BY ID DESC LIMIT $PuntoInicio,$Limit;";
             $Consulta=$obCon->QueryExterno($sql, HOST, USER, PW, DB, "");
@@ -98,7 +108,7 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
                 $i=$i+1;
             }
             $z=0;
-            $js='data-item_id="" data-form_id="1"';
+            $data_table='data-item_id="" data-form_id="1"';
             $Columnas[$z++]="<strong>Editar</strong>";
             $Columnas[$z++]="<strong>ID</strong>";
             $Columnas[$z++]="<strong>Nombre</strong>";
@@ -110,7 +120,37 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
             $Acciones["ID"]["js"]='data-item_id="@value" data-form_id="1"';
             $Acciones["ID"]["icon"]="fa fa-edit ts_form_table";
             $Acciones["ID"]["style"]="style=font-size:20px;color:blue;cursor:pointer";
-            $htmlTabla=$css->getHtmlTable("<span class='fa fa-plus-circle ts_form_table' style='font-size:40px;color:green;cursor:pointer' $js></span> <strong>AGREGAR</strong> ", $Columnas, $Filas,$Acciones);
+            $htmlHeaderTable='<div class="row"><div class="col-md-3"><span class="fa fa-plus-circle ts_form_table" style="font-size:40px;color:green;cursor:pointer" '.$data_table.'></span> <strong>AGREGAR</strong></div>' ;
+            $htmlHeaderTable.='<div class="col-md-3 text-center">
+                                    <div class="panel panel-default">
+                                        <div class="widget-5">
+                                            <div class="tbl-cell icon bg-primary"><i class="fa fa-building"></i></div>
+                                            <div class="tbl-cell">
+                                                <div class="content">
+                                                    <h4>'.number_format($ResultadosTotales).'</h4>
+                                                    <h4>Locales</h4>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>';  
+            $htmlHeaderTable.='<div class="col-md-3 text-center">
+                                    <div class="panel panel-default">
+                                        <div class="widget-5">
+                                            <div class="tbl-cell icon bg-success"><i class="icon-wallet"></i></div>
+                                            <div class="tbl-cell">
+                                                <div class="content">
+                                                    <h4>$'.number_format($TotalTarifa).'</h4>
+                                                    <h4>Total Tarifa</h4>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>';  
+            $htmlHeaderTable.='<div class="col-md-3 text-right">'.$htmlNavMinus.' '.$htmlNavMore.'</div></div>';
+            $htmlTabla=$css->getHtmlTable($htmlHeaderTable, $Columnas, $Filas,$Acciones);
             $html.=$htmlTabla;
             $html.="</div>";
             $html.="</div>";

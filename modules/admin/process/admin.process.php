@@ -265,14 +265,15 @@ if( !empty($_REQUEST["actionAdmin"]) ){
                 $idLocal=$idEditar;
             }
             $Extension="";
+            $DatosConfiguracion=$obCon->DevuelveValores("configuracion_general", "ID", 2000);
+                
+            $carpeta=$DatosConfiguracion["Valor"];
             if(is_file($FondoLocal)){
                 
                 $info = new SplFileInfo($FondoLocal);
                 $Extension=($info->getExtension());  
                 $Tamano=filesize($FondoLocal);
-                $DatosConfiguracion=$obCon->DevuelveValores("configuracion_general", "ID", 2000);
                 
-                $carpeta=$DatosConfiguracion["Valor"];
                 if (!file_exists($carpeta)) {
                     mkdir($carpeta, 0777);
                 }
@@ -298,13 +299,13 @@ if( !empty($_REQUEST["actionAdmin"]) ){
                 }
                 
                 rename($FondoLocal, $destino);
-                if(is_file($Logo)){
-                    rename($Logo, $carpeta."logo-header.png");
-                }
+                
                 //unlink("tmp/$form_identify");
                 $obCon->RegistreFondoLocal($idLocal, $destino, $Tamano, $FondoLocal, $Extension, 1);
             }
-            
+            if(is_file($Logo)){
+                rename($Logo, $carpeta.$idLocal."/logo-header.png");
+            }
             print("OK;Registro Guardado Correctamente;$idEditar");
             
         break;//Fin caso 6  

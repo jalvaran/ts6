@@ -93,7 +93,7 @@ class AdminConstruct extends PageConstruct{
                             <a><i class="fas fa-expand"></i></a>
                         </div>
                         <div class="page-search">
-                            <input type="text" placeholder="Buscar....">
+                            <input id="txtSearch" data-submenu_id="1" data-page="1" data-folder="admin" data-action_view="2" type="text" placeholder="Buscar....">
                         </div>
                     </div>
                     <div class="col-8 col-md-5 page-hdr-right">
@@ -262,7 +262,7 @@ class AdminConstruct extends PageConstruct{
                     $querySubMenu= $this->obCon->Query($sql);
                     while($dataSubMenu= $this->obCon->FetchAssoc($querySubMenu)){
                         $html.='<li>
-                                    <a class="ts-submenu-modules" data-submenu_name="'.$dataSubMenu["name_menu"].'" data-submenu_id="'.$dataSubMenu["id"].'" data-folder="'.$dataModule["folder"].'" data-action_view="'.$dataSubMenu["action_view"].'" ><span>'.$dataSubMenu["name_menu"].'</span></a>
+                                    <a class="ts-submenu-modules" data-page="1" data-submenu_name="'.$dataSubMenu["name_menu"].'" data-submenu_id="'.$dataSubMenu["id"].'" data-folder="'.$dataModule["folder"].'" data-action_view="'.$dataSubMenu["action_view"].'" ><span>'.$dataSubMenu["name_menu"].'</span></a>
                                 </li>';
                     }
 
@@ -602,11 +602,30 @@ class AdminConstruct extends PageConstruct{
                             if($dataLocal["header_class"]==''){
                                 $dataLocal["header_class"]="dark";
                             }
-                            if($dataLocal["slider_class"]==''){
+                            if(!isset($dataLocal["slider_class"])){
                                 $dataLocal["slider_class"]="dark";
                             }
-                            if($dataLocal["virtual_shop"]==""){
+                            if(!isset($dataLocal["virtual_shop"])){
                                 $dataLocal["virtual_shop"]=1;
+                            }
+                            if(!isset($dataLocal["Orden"])){
+                                $dataLocal["Orden"]=1;
+                            }
+                            if(!isset($dataLocal["keywords"])){
+                                $dataLocal["keywords"]='';
+                            }
+                            if(!isset($dataLocal["UrlLocal"])){
+                                $dataLocal["UrlLocal"]='';
+                            }
+                            if(!isset($dataLocal["title_page"])){
+                                $dataLocal["title_page"]='';
+                            }
+                            
+                            if(!isset($dataLocal["Alcance"])){
+                                $dataLocal["Alcance"]=1;
+                            }
+                            if(!isset($dataLocal["Estado"])){
+                                $dataLocal["Estado"]='1';
                             }
                            $html.='<div class="col-md-4">
                                     <div class="form-group">
@@ -729,7 +748,7 @@ class AdminConstruct extends PageConstruct{
 
                 </div>
                 <div class="panel-footer text-right">                                    
-                    <button id="btn_form_save" data-table_id="3" data-form_identify="'.$form_identify.'" class="btn btn-primary btn-pill">Crear</button>
+                    <button id="btn_form_save" data-table_id="3" data-form_identify="'.$form_identify.'" class="btn btn-primary btn-pill"> - Guardar - </button>
                 </div>
 
 

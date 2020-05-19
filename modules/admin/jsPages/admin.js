@@ -22,7 +22,14 @@ $(document).ready(function(){
     
     $('.ts-submenu-modules').on('click',function () {        
         $('#titleModule').text($(this).data("submenu_name"));
-        draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"));
+        draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
+    });
+    
+    $("#txtSearch").keypress(function(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if(code==13){
+            draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
+        }
     });
     
 } );
@@ -34,6 +41,10 @@ function add_events_tables_data(){
     
     $('#btnMigrates').on('click',function () { 
         ConfirmarMigracion();
+    });
+    
+    $('.ts_paginator').on('click',function () { 
+        draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
     });
     
     
@@ -52,14 +63,16 @@ function spinnerCreate(){
 spinnerCreate();
 
 
-function draw_content_submenu(submenu_id,folder,action_view){
-    
+function draw_content_submenu(submenu_id,folder,action_view,page){
+    var Busqueda=document.getElementById('txtSearch').value;
     var idDiv="divContentModule";
     urlQuery=URLAjax+'viewsAdmin';    
     var form_data = new FormData();
         form_data.append('actionPagesDrawAdmin', action_view);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
         form_data.append('submenu_id', submenu_id);
-        form_data.append('folder', folder);        
+        form_data.append('folder', folder);
+        form_data.append('page', page);
+        form_data.append('Busqueda', Busqueda);
         form_data.append('myPath', myPath);
         
        $.ajax({// se arma un objecto por medio de ajax  
@@ -138,7 +151,7 @@ function draw_form_locals(item_id){
             var form_identify=$("#btn_form_save").data("form_identify");
             var myDropzone = new Dropzone("#logoLocal", { url: urlQuery,paramName: "logo",acceptedFiles: 'image/*'});
                 myDropzone.on("sending", function(file, xhr, formData) { 
-                    console.log(file.type);
+                    
                     formData.append("actionAdmin", 10);
                     formData.append("myPath", myPath);
                     formData.append("form_identify", form_identify);
@@ -345,7 +358,7 @@ function GuardarEditarLocal(idItem){
             var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
             if(respuestas[0]=="OK"){ 
                 toastr.success(respuestas[1]);                
-                draw_content_submenu(1,'admin',2); 
+                draw_content_submenu(1,'admin',2,1); 
                 if(idItem==''){
                     ConfirmarMigracion();
                 }
