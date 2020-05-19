@@ -51,3 +51,11 @@ function MarqueErrorElemento(idElemento){
     document.getElementById(idElemento).style.backgroundColor="pink";
     document.getElementById(idElemento).focus();
 }
+
+
+function importScript(name) {
+    var s = document.createElement("script");
+    s.src = name;
+    document.querySelector("head").appendChild(s);
+}
+

@@ -22,13 +22,18 @@ $(document).ready(function(){
     
     $('.ts-submenu-modules').on('click',function () {        
         $('#titleModule').text($(this).data("submenu_name"));
-        draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
+        $('#txtSearch').data("submenu_id",$(this).data("submenu_id"));
+        $('#txtSearch').data("folder",$(this).data("folder"));
+        $('#txtSearch').data("action_view",$(this).data("action_view"));
+        $('#txtSearch').data("route_view",$(this).data("route_view"));
+        
+        draw_content_submenu($(this).data("route_view"),$(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
     });
     
     $("#txtSearch").keypress(function(e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if(code==13){
-            draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
+            draw_content_submenu($(this).data("route_view"),$(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
         }
     });
     
@@ -44,7 +49,7 @@ function add_events_tables_data(){
     });
     
     $('.ts_paginator').on('click',function () { 
-        draw_content_submenu($(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
+        draw_content_submenu($(this).data("route_view"),$(this).data("submenu_id"),$(this).data("folder"),$(this).data("action_view"),$(this).data("page"));
     });
     
     
@@ -63,12 +68,12 @@ function spinnerCreate(){
 spinnerCreate();
 
 
-function draw_content_submenu(submenu_id,folder,action_view,page){
+function draw_content_submenu(route_view,submenu_id,folder,action_view,page){
     var Busqueda=document.getElementById('txtSearch').value;
     var idDiv="divContentModule";
-    urlQuery=URLAjax+'viewsAdmin';    
+    urlQuery=URLAjax+route_view;    
     var form_data = new FormData();
-        form_data.append('actionPagesDrawAdmin', action_view);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
+        form_data.append('action', action_view);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
         form_data.append('submenu_id', submenu_id);
         form_data.append('folder', folder);
         form_data.append('page', page);
@@ -83,16 +88,21 @@ function draw_content_submenu(submenu_id,folder,action_view,page){
         processData: false,
         data: form_data,
         type: 'post', // se especifica que metodo de envio se utilizara normalmente y por seguridad se utiliza el post
-        beforeSend: function() {
-            $('#loader').fadeIn();
-        },
-        complete: function(){
-            $('#loader').fadeOut();
-        },
+        
         success: function(data){    
             
             document.getElementById(idDiv).innerHTML=data; //La respuesta del servidor la dibujo en el div DivTablasBaseDatos                      
+            //console.log(data);
             add_events_tables_data();
+            
+            
+            var id="#submenu_ts6_"+submenu_id;
+            if($(id).data("scripts_menu")!=''){          
+                
+                var url_js=URLAjax+'modules/'+$(id).data("folder")+'/jsPages/'+$(id).data("scripts_menu");
+                    $.getScript(url_js);                        
+
+            }
             
         },
         error: function (xhr, ajaxOptions, thrownError) {// si hay error se ejecuta la funcion
@@ -119,7 +129,7 @@ function draw_form_locals(item_id){
     var idDiv="divContentModule";
     urlQuery=URLAjax+'viewsAdmin';    
     var form_data = new FormData();
-        form_data.append('actionPagesDrawAdmin', 3);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
+        form_data.append('action', 3);// pasamos la accion y el numero de accion para el dibujante sepa que caso tomar
         form_data.append('item_id', item_id);          
         form_data.append('myPath', myPath);
         
@@ -152,7 +162,7 @@ function draw_form_locals(item_id){
             var myDropzone = new Dropzone("#logoLocal", { url: urlQuery,paramName: "logo",acceptedFiles: 'image/*'});
                 myDropzone.on("sending", function(file, xhr, formData) { 
                     
-                    formData.append("actionAdmin", 10);
+                    formData.append("action", 10);
                     formData.append("myPath", myPath);
                     formData.append("form_identify", form_identify);
                     formData.append("typeImage", 0);//Le indico al sistema que es el logo
@@ -182,7 +192,7 @@ function draw_form_locals(item_id){
             var myDropzone2 = new Dropzone("#fotoLocal", { url: urlQuery,paramName: "logo",acceptedFiles: 'image/*',addRemoveLinks: true});
                 myDropzone2.on("sending", function(file, xhr, formData) { 
                     console.log(file.type);
-                    formData.append("actionAdmin", 10);
+                    formData.append("action", 10);
                     formData.append("myPath", myPath);
                     formData.append("form_identify", form_identify);
                     formData.append("typeImage", 1);//Le indico al sistema que es la foto
@@ -285,6 +295,7 @@ function ConfirmaGuardarEditar(Tabla,idItem){
 function GuardarEditarLocal(idItem){
     
     var form_identify=$("#btn_form_save").data("form_identify");
+    var route_view=$("#btn_form_save").data("route_view");
     var idCategoria=document.getElementById('idCategoria').value;
     var Nombre=document.getElementById('Nombre').value;
     var Direccion=document.getElementById('Direccion').value;
@@ -314,7 +325,7 @@ function GuardarEditarLocal(idItem){
     
     var form_data = new FormData();
        
-        form_data.append('actionAdmin', '6');         
+        form_data.append('action', '6');         
         form_data.append('idItem', idItem);
         form_data.append('Token_user', idClientUser);
         form_data.append('idCategoria', idCategoria);
@@ -358,7 +369,7 @@ function GuardarEditarLocal(idItem){
             var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
             if(respuestas[0]=="OK"){ 
                 toastr.success(respuestas[1]);                
-                draw_content_submenu(1,'admin',2,1); 
+                draw_content_submenu(route_view,1,'admin',2,1); 
                 if(idItem==''){
                     ConfirmarMigracion();
                 }

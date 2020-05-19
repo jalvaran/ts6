@@ -7,43 +7,8 @@ if( !empty($_REQUEST["action"]) ){
     
     switch ($_REQUEST["action"]) {
         
-        case 1: //Validar inicio de sesion y setearla
-            
-            $user_domi= str_replace(" ", "", $obCon->normalizar($_REQUEST["user_domi"]));
-            $pw_domi=str_replace(" ", "",$obCon->normalizar($_REQUEST["pw_domi"]));
-            $sql="SELECT ID,Nombre FROM locales WHERE Email LIKE '$user_domi' AND Password='$pw_domi'";
-            $DatosValidacion=$obCon->FetchAssoc($obCon->Query($sql));
-            if($DatosValidacion["ID"]==''){
-                exit("E1;Usuario o Contraseña incorrectos");
-            }else{
-                $_SESSION['idLocal'] = $DatosValidacion["ID"];
-                $_SESSION['Token'] = $_REQUEST["Token_user"];
-                exit("OK;Bienvenid@ ".$DatosValidacion["Nombre"]);
-                
-            }
-        break;//Fin caso 1
-        
-        case 2://Destruir sesion
-            session_destroy();
-            print("OK;Sesion terminada");
-        break;//Fin caso 2   
-        
-        case 3://Cambiar pedido de estado
-            $Estado=$obCon->normalizar($_REQUEST["Estado"]);
-            $idPedido=$obCon->normalizar($_REQUEST["idPedido"]);
-            if($idPedido==''){
-                exit("E1;No se recibió el id del pedido");
-            }
-            if($Estado==''){
-                exit("E1;Seleccione una opción");
-            }
-            $sql="UPDATE pedidos SET Estado='$Estado' WHERE ID='$idPedido'";
-            $obCon->Query($sql);
-            $DatosEstados=$obCon->DevuelveValores("pedidos_estados", "ID", $Estado);
-            print("OK;El estado del pedido fué actualizado;".$DatosEstados["EstadoPedido"]);
-        break;//Fin caso 4    
-        
-        case 4://Guardar o editar clasificacion
+         
+        case 1://Guardar o editar clasificacion
             $idItem=$obCon->normalizar($_REQUEST["idItem"]);
             $Datos["Estado"]=$obCon->normalizar($_REQUEST["Estado"]);
             $Datos["Clasificacion"]=$obCon->normalizar($_REQUEST["Clasificacion"]);
@@ -305,7 +270,7 @@ if( !empty($_REQUEST["action"]) ){
                 $obCon->RegistreFondoLocal($idLocal, $destino, $Tamano, $FondoLocal, $Extension, 1);
             }
             if(is_file($Logo)){
-                rename($Logo, $DatosConfiguracion["Valor"].$idLocal."/logo-header.png");
+                rename($Logo, $carpeta.$idLocal."/logo-header.png");
             }
             print("OK;Registro Guardado Correctamente;$idEditar");
             

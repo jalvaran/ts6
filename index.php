@@ -46,6 +46,15 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
         include_once "modules/admin/views/admin.draw.php";
      });
      
+     $router->post('/viewsInventory', function () {       
+        include_once "modules/inventory/views/inventory.draw.php";
+     });
+     
+     $router->post('/processInventory', function () {       
+        include_once "modules/inventory/process/inventory.process.php";
+     });
+     
+     
      $router->post('/processShopping', function () {       
         include_once "modules/main/process/shopping.process.php";
      });
@@ -101,7 +110,7 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
         }
         
         if($admin==1){
-            $_REQUEST["actionPagesDrawAdmin"]=1; //Dibuja la pagina principal        
+            $_REQUEST["action"]=1; //Dibuja la pagina principal        
                  
             include_once "modules/admin/views/admin.draw.php";
             

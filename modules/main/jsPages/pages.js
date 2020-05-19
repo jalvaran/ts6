@@ -904,12 +904,12 @@ function LoginAdmin(token){
     var pw_domi=document.getElementById("passLogin").value;
     
     var form_data = new FormData();
-        form_data.append('actionAdmin', '1'); 
+        form_data.append('action', '1'); 
         form_data.append('user_domi', user_domi);
         form_data.append('pw_domi', pw_domi);
         form_data.append('Token_user', idClientUser);
         form_data.append('token', token);
-        form_data.append('action', 'loginAdmin');
+        //form_data.append('action', '1');
         
         urlQuery=URLAjax+'processAdminShop';
         
@@ -922,7 +922,7 @@ function LoginAdmin(token){
         data: form_data,
         type: 'post',
         success: function(data){
-            
+            console.log("DAtos"+data);
             var respuestas = data.split(';'); //Armamos un vector separando los punto y coma de la cadena de texto
             if(respuestas[0]=="OK"){ 
                 

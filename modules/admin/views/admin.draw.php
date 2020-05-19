@@ -1,6 +1,6 @@
 <?php
 
-if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion es diferente a vacio 
+if(!empty($_REQUEST["action"])){// se verifica si el indice accion es diferente a vacio 
     
     include_once("modules/admin/constructors/constructor.class.php");
     include_once("modelo/php_conexion.php");
@@ -13,7 +13,7 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
     }
     $local_id=$obCon->normalizar($_SESSION["idLocal"]);
    
-    switch($_REQUEST["actionPagesDrawAdmin"]){
+    switch($_REQUEST["action"]){
        
         case 1://Dibuja el dashboard del admin
             $css =  new AdminConstruct($local_id,1000);    
@@ -25,7 +25,10 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
             
                 //Contenido que se verá
             
-            $html.=$css->get_dashboard_end();            
+            $html.=$css->get_dashboard_end(); 
+            
+            $html.='</body>';
+            $html.='</html>';
             print($html);
             
         break;//Fin caso 1
@@ -78,8 +81,7 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
                         <div class="text-right"><strong>EJECUTAR MIGRACIONES</strong> <button id="btnMigrates" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-error m-1" data-upgraded=",MaterialButton"><i class="fa fa-cogs"></i></button></div>
                     </div>';
             $html.='<div class="panel-body">';
-            $htmlNavMinus="";
-            $htmlNavMore="";
+            
             //if($ResultadosTotales>$Limit){
                 $TotalPaginas= ceil($ResultadosTotales/$Limit);
                 $disabled="disabled";
@@ -87,14 +89,14 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
                     $disabled="";                   
                 }
                 $Pagego=$Page-1;
-                $htmlNavMinus='<button '.$disabled.' id="btnPageDown" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-left" ></li></button>';
+                $htmlNavMinus='<button '.$disabled.' id="btnPageDown" data-route_view="viewsAdmin" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-left" ></li></button>';
                 $disabled="disabled";
                 if($ResultadosTotales>($PuntoInicio+$Limit)){
                     
                     $disabled="";  
                 }
                 $Pagego=$Page+1;
-                $htmlNavMore='<button '.$disabled.' id="btnPageUp" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-right" ></li></button>';
+                $htmlNavMore='<button '.$disabled.' id="btnPageUp" data-route_view="viewsAdmin" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-secondary m-1 ts_paginator" data-page="'.$Pagego.'" data-submenu_name="Administrar locales" data-submenu_id="1" data-folder="admin" data-action_view="2" ><li class="far fa-arrow-alt-circle-right" ></li></button>';
                 $htmlNavMore.='<br><strong class="text-muted">Página '.$Page.' de '.$TotalPaginas.'</strong>';
                 
             //}
@@ -167,32 +169,10 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
                 include_once "pages/404.php";
                 exit();
             }
-            print($css->get_form_locals($item_id));
+            print($css->get_form_locals($item_id,"viewsAdmin"));
             
         break;//Fin caso 3
     
-        case 4://Dibuja el slider de un producto
-            $path=$obCon->normalizar($_REQUEST["myPath"]);
-            $dataProduct=$obCon->normalizar($_REQUEST["dataProduct"]);
-            
-            $local_id=$obCon->normalizar($_REQUEST["local_id"]);            
-            $css =  new PageConstruct($local_id,3,$path);           
-            $dataProduct= get_object_vars(json_decode(base64_decode($dataProduct)));
-            
-            print($css->get_slider_product($dataProduct));
-        break;//Fin caso 4
-    
-        case 5://Dibuja una orden de pedido
-            $path=$obCon->normalizar($_REQUEST["myPath"]);
-            $idClientUser=$obCon->normalizar($_REQUEST["idClientUser"]);            
-            $local_id=$obCon->normalizar($_REQUEST["local_id"]); 
-            
-            $css =  new PageConstruct($local_id,3,$path);  
-            print($css->get_shop_order($idClientUser));
-        break;//Fin caso 5
-        
-        
-          
         
  }
     
