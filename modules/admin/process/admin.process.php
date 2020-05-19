@@ -1,7 +1,6 @@
 <?php
 if(session_status() !== PHP_SESSION_ACTIVE) session_start();
 include_once("modules/admin/class/admin.class.php");
-
 if( !empty($_REQUEST["actionAdmin"]) ){
     
     $obCon=new Admin(1);
@@ -178,6 +177,7 @@ if( !empty($_REQUEST["actionAdmin"]) ){
         case 6://Guarda el formulario del local
             $idItem=$obCon->normalizar($_REQUEST["idItem"]);
             $idEditar=$idItem;
+            $form_identify=$obCon->normalizar($_REQUEST["form_identify"]);
             $Datos["idCategoria"]=$obCon->normalizar($_REQUEST["idCategoria"]);
             $Datos["Nombre"]=$obCon->normalizar($_REQUEST["Nombre"]);
             $Datos["Direccion"]=$obCon->normalizar($_REQUEST["Direccion"]);
@@ -189,8 +189,23 @@ if( !empty($_REQUEST["actionAdmin"]) ){
             $Datos["Descripcion"]=$obCon->normalizar($_REQUEST["Descripcion"]);
             $Datos["Orden"]=$obCon->normalizar($_REQUEST["Orden"]);
             $Datos["Estado"]=$obCon->normalizar($_REQUEST["Estado"]);
+            
+            $Datos["Indicativo"]=$obCon->normalizar($_REQUEST["Indicativo"]);
+            $Datos["Whatsapp"]=$obCon->normalizar($_REQUEST["Whatsapp"]);
+            $Datos["idTelegram"]=$obCon->normalizar($_REQUEST["idTelegram"]);
+            $Datos["idCiudad"]=$obCon->normalizar($_REQUEST["idCiudad"]);
+            $Datos["theme_id"]=$obCon->normalizar($_REQUEST["theme_id"]);
+            $Datos["page_initial"]=$obCon->normalizar($_REQUEST["page_initial"]);
+            $Datos["header_class"]=$obCon->normalizar($_REQUEST["header_class"]);
+            $Datos["slider_class"]=$obCon->normalizar($_REQUEST["slider_class"]);
+            $Datos["keywords"]=$obCon->normalizar($_REQUEST["keywords"]);
+            $Datos["virtual_shop"]=$obCon->normalizar($_REQUEST["virtual_shop"]);
+            $Datos["UrlLocal"]=$obCon->normalizar($_REQUEST["UrlLocal"]);
+            $Datos["title_page"]=$obCon->normalizar($_REQUEST["title_page"]);
+            $Datos["Alcance"]=$obCon->normalizar($_REQUEST["Alcance"]);
+            
             foreach ($Datos as $key => $value) {
-                if($value=="" AND $key<>'Orden'){
+                if($value=="" AND $key<>'Orden' AND $key<>'keywords' AND $key<>'UrlLocal'){
                     exit("E1;El campo $key no puede estar vacío;$key");
                 }
             }
@@ -205,18 +220,13 @@ if( !empty($_REQUEST["actionAdmin"]) ){
             if($DatosSesion["Estado"]=="E1"){               
                 exit($DatosSesion["Estado"].";".$DatosSesion["Mensaje"]);
             }
-            
+            $Logo="tmp/".$form_identify."/logo-header.png";
+            $FondoLocal="tmp/".$form_identify."/local-foto.png";
             if($idItem==''){
-                if(empty($_FILES['Fondo']['name'])){
+                if(!is_file($FondoLocal)){
 
-                    exit("E1;Debe Adjuntar una Imagen para el Local;Fondo");
-                }else{
-                    $info = new SplFileInfo($_FILES['Fondo']['name']);
-                    $Extension=($info->getExtension());  
-                    if($Extension<>'jpg' and $Extension<>'png' and $Extension<>'jpeg'){
-                        exit("E1;Solo se permiten imagenes;ImagenProducto");
-                    }
-                } 
+                    exit("E1;Debe Adjuntar una Imagen para el Local");
+                }
             }
             
             //$idLocal=$_SESSION["idLocal"];
@@ -255,11 +265,11 @@ if( !empty($_REQUEST["actionAdmin"]) ){
                 $idLocal=$idEditar;
             }
             $Extension="";
-            if(!empty($_FILES['Fondo']['name'])){
+            if(is_file($FondoLocal)){
                 
-                $info = new SplFileInfo($_FILES['Fondo']['name']);
+                $info = new SplFileInfo($FondoLocal);
                 $Extension=($info->getExtension());  
-                $Tamano=filesize($_FILES['Fondo']['tmp_name']);
+                $Tamano=filesize($FondoLocal);
                 $DatosConfiguracion=$obCon->DevuelveValores("configuracion_general", "ID", 2000);
                 
                 $carpeta=$DatosConfiguracion["Valor"];
@@ -286,8 +296,13 @@ if( !empty($_REQUEST["actionAdmin"]) ){
                     $sql="DELETE FROM locales_imagenes WHERE idLocal='$idLocal'";
                     $obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
                 }
-                move_uploaded_file($_FILES['Fondo']['tmp_name'],$destino);
-                $obCon->RegistreFondoLocal($idLocal, $destino, $Tamano, $_FILES['Fondo']['name'], $Extension, 1);
+                
+                rename($FondoLocal, $destino);
+                if(is_file($Logo)){
+                    rename($Logo, $carpeta."logo-header.png");
+                }
+                //unlink("tmp/$form_identify");
+                $obCon->RegistreFondoLocal($idLocal, $destino, $Tamano, $FondoLocal, $Extension, 1);
             }
             
             print("OK;Registro Guardado Correctamente;$idEditar");
@@ -454,7 +469,37 @@ if( !empty($_REQUEST["actionAdmin"]) ){
             }
             print("OK;Registro Guardado");
             
-        break;//Fin caso 9    
+        break;//Fin caso 9  
+        
+        case 10://Recibir el logo y foto de un local
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            $typeImage=$obCon->normalizar($_REQUEST["typeImage"]);
+            $form_identify=$obCon->normalizar($_REQUEST["form_identify"]);
+            $dir_subida = 'tmp/';
+            if (!file_exists($dir_subida)) {
+                mkdir($dir_subida, 0777);
+            }
+            $dir_subida.=$form_identify."/";
+            if (!file_exists($dir_subida)) {
+                mkdir($dir_subida, 0777);
+            }
+            if($typeImage==0){
+                $name="logo-header.png";
+            }else if($typeImage==1){
+                $name="local-foto.png";
+            }else{
+                exit("E1;No se recibió el tipo de logo");
+            }
+            
+            $fichero_subido = $dir_subida . basename($name);
+            
+            if (move_uploaded_file($_FILES['logo']['tmp_name'], $fichero_subido)) {
+                print("OK;El archivo fué subido con éxito");
+            } else {
+                print("E1;Error al mover el archivo");
+            }
+           
+        break;//Fin caso 10
         
     }
           

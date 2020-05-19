@@ -40,7 +40,8 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
             $css =  new AdminConstruct($local_id,0,$path);
             $html="<div class='panel'>";
             $html.='<div class="panel-head">
-                        <h5 class="panel-title">Lista de Locales</h5>
+                        <h5 class="panel-title">Lista de Locales</h5> 
+                        <div class="text-right"><strong>EJECUTAR MIGRACIONES</strong> <button id="btnMigrates" class="mdl-button mdl-js-button mdl-button--fab mdl-button--colored button-error m-1" data-upgraded=",MaterialButton"><i class="fa fa-cogs"></i></button></div>
                     </div>';
             $html.='<div class="panel-body">';
             $Limit=20;
@@ -109,7 +110,7 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
             $Acciones["ID"]["js"]='data-item_id="@value" data-form_id="1"';
             $Acciones["ID"]["icon"]="fa fa-edit ts_form_table";
             $Acciones["ID"]["style"]="style=font-size:20px;color:blue;cursor:pointer";
-            $htmlTabla=$css->getHtmlTable("<span class='fa fa-plus-circle ts_form_table' style='font-size:40px;color:green;cursor:pointer' $js></span> <strong>AGREGAR</strong>", $Columnas, $Filas,$Acciones);
+            $htmlTabla=$css->getHtmlTable("<span class='fa fa-plus-circle ts_form_table' style='font-size:40px;color:green;cursor:pointer' $js></span> <strong>AGREGAR</strong> ", $Columnas, $Filas,$Acciones);
             $html.=$htmlTabla;
             $html.="</div>";
             $html.="</div>";
@@ -120,13 +121,13 @@ if(!empty($_REQUEST["actionPagesDrawAdmin"])){// se verifica si el indice accion
         
         case 3://Dibuje el formulario para editar o agregar un local
             $path=$obCon->normalizar($_REQUEST["myPath"]);
-            
+            $item_id=$obCon->normalizar($_REQUEST["item_id"]);
             $css =  new AdminConstruct($local_id,1000);    
             if($css->dataClient["ID"]==''){
                 include_once "pages/404.php";
                 exit();
             }
-            print($css->get_form_locals());
+            print($css->get_form_locals($item_id));
             
         break;//Fin caso 3
     

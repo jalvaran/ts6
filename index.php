@@ -34,7 +34,9 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
     
     $router->get('/searchMunicipalities', function () {       
         include_once "general/buscadores/catalogo_municipios.search.php";
-     });
+    });
+    
+    
      
      $router->post('/views', function () {       
         include_once "modules/main/views/pages.draw.php";
@@ -46,6 +48,10 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
      
      $router->post('/processShopping', function () {       
         include_once "modules/main/process/shopping.process.php";
+     });
+     
+     $router->post('/processMigrations', function () {       
+        include_once "modules/admin/process/migrations.process.php";
      });
      
      $router->post('/processAdminShop', function () {       
@@ -95,8 +101,7 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
         }
         
         if($admin==1){
-            $_REQUEST["actionPagesDrawAdmin"]=1; //Dibuja la pagina principal
-            
+            $_REQUEST["actionPagesDrawAdmin"]=1; //Dibuja la pagina principal        
                  
             include_once "modules/admin/views/admin.draw.php";
             

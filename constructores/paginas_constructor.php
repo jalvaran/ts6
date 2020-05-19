@@ -142,7 +142,7 @@ class PageConstruct extends html_estruct_class{
     }
     
     public function get_headerGeneral() {
-        $urlLogo="clients/".$this->dataClient["ID"]."/images/logo-header.png";
+        $urlLogo="domi_images/locales/".$this->dataClient["ID"]."/logo-header.png";
         
         if(!file_exists($urlLogo)){
             $urlLogo=$this->path."images/domismall.png";

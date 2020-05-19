@@ -26,17 +26,18 @@ function ConfirmarMigracion(){
  * @returns {undefined}
  */
 function IniciarMigraciones(){
-    AbreModal('modalMain');
-    var idDiv="DivModal";
+    openModal('modalAdmin');
+    var idDiv="divModal";
     document.getElementById(idDiv).innerHTML='<div id="GifProcess">Procesando...<br><img   src="../../images/loader.gif" alt="Cargando" height="100" width="100"></div>';
         
     var form_data = new FormData();
-        form_data.append('Accion', 1);
+        form_data.append('ActionMigrations', 1);
         form_data.append('Token_user', idClientUser);
         
         
+        urlQuery=URLAjax+'processMigrations';                       
         $.ajax({
-        url: './procesadores/migrations.process.php',
+        url: urlQuery,
         //dataType: 'json',
         cache: false,
         contentType: false,
@@ -74,17 +75,17 @@ function IniciarMigraciones(){
  */
 function EjecutarMigraciones(MigracionActual){
     
-    var idDiv="DivModal";
+    var idDiv="divModal";
     
     var form_data = new FormData();
-        form_data.append('Accion', 2);        
+        form_data.append('ActionMigrations', 2);        
         
         form_data.append('MigracionActual', MigracionActual);
         form_data.append('Token_user', idClientUser);
-      
-    $.ajax({
-        //async:false,
-        url: './procesadores/migrations.process.php',
+        
+        urlQuery=URLAjax+'processMigrations';                       
+        $.ajax({
+        url: urlQuery,
         //dataType: 'json',
         cache: false,
         contentType: false,
