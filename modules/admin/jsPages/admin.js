@@ -100,6 +100,7 @@ function draw_content_submenu(route_view,submenu_id,folder,action_view,page){
             if($(id).data("scripts_menu")!=''){          
                 
                 var url_js=URLAjax+'modules/'+$(id).data("folder")+'/jsPages/'+$(id).data("scripts_menu");
+                    
                     $.getScript(url_js);                        
 
             }

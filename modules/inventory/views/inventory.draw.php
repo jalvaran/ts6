@@ -143,7 +143,7 @@ if(!empty($_REQUEST["action"])){// se verifica si el indice accion es diferente 
             
         break;//Fin caso 2 
         
-        case 3: //
+        case 3: //listado de productos y servicios
             
             $submenu_id=$obCon->normalizar($_REQUEST["submenu_id"]);
             $dataSubmenu=$obCon->DevuelveValores("ts6_modules_menu", "id", $submenu_id);
@@ -207,7 +207,8 @@ if(!empty($_REQUEST["action"])){// se verifica si el indice accion es diferente 
             $htmlNavMore.='<br><strong class="text-muted">Página '.$Page.' de '.$TotalPaginas.'</strong>';
                 
             
-            $sql="SELECT ID, Nombre,PrecioVenta, DescripcionCorta FROM productos_servicios $Condicion ORDER BY ID DESC LIMIT $PuntoInicio,$Limit;";
+            $sql="SELECT ID, Nombre,PrecioVenta, DescripcionCorta,
+                    (SELECT Clasificacion FROM inventarios_clasificacion WHERE  inventarios_clasificacion.ID=productos_servicios.idClasificacion) as Clasificacion  FROM productos_servicios $Condicion ORDER BY ID DESC LIMIT $PuntoInicio,$Limit;";
             $Consulta=$obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
             $i=0;
             $Filas[]="";
@@ -222,6 +223,7 @@ if(!empty($_REQUEST["action"])){// se verifica si el indice accion es diferente 
             $Columnas[2]="<strong>Nombre</strong>";
             $Columnas[3]="<strong>Precio de Venta</strong>";
             $Columnas[4]="<strong>Descripcion</strong>";
+            $Columnas[5]="<strong>Clasificacion</strong>";
                        
             $data_table='data-item_id="" data-form_id="2"';
             $Acciones["ID"]["js"]='data-item_id="@value" data-form_id="2"';
@@ -268,6 +270,73 @@ if(!empty($_REQUEST["action"])){// se verifica si el indice accion es diferente 
             print($css->get_form_inventory($item_id,"viewsInventory")); 
             
         break;//Fin caso 4
+        
+        case 5://lista de las imagenes de los productos
+            
+            $Limit=20;
+            $idLocal=$obCon->normalizar($_SESSION["idLocal"]);
+            $myPath=$obCon->normalizar($_REQUEST["myPath"]);
+            $idProducto=$obCon->normalizar($_REQUEST["product_id"]);            
+            $DatosLocal=$obCon->DevuelveValores("locales", "ID", $idLocal);
+            
+            $Page=1;
+            $Busqueda='';
+            $css =  new InventoryConstruct($local_id,1000); 
+            if($Page==''){
+                $Page=1;
+                
+            }
+            if($idProducto==''){
+                exit("No se recibió el id del producto");                
+            }
+            $Condicion=" WHERE idProducto='$idProducto' ";
+            
+            if($Busqueda<>''){
+                $Condicion.=" AND (NombreArchivo like '%$Busqueda%' )";
+            }
+            
+            $PuntoInicio = ($Page * $Limit) - $Limit;
+            
+            $sql = "SELECT COUNT(t1.ID) as Items 
+                   FROM productos_servicios_imagenes t1 $Condicion;";
+            
+            $Consulta2=$obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
+            $totales = $obCon->FetchAssoc($Consulta2);
+            $ResultadosTotales = $totales['Items'];
+                        
+            $sql="SELECT ID,Ruta, NombreArchivo,Tamano FROM productos_servicios_imagenes $Condicion ORDER BY ID DESC LIMIT $PuntoInicio,$Limit;";
+            $Consulta=$obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
+            $i=0;
+            $Filas[]="";
+            $imgTotals=0;
+            while($DatosClasificacion=$obCon->FetchAssoc($Consulta)){
+                $imgTotals=$imgTotals+1;
+                $DatosClasificacion["Ruta"]= str_replace("../", "", $DatosClasificacion["Ruta"]);
+                $DatosClasificacion["Ruta"]=$myPath.$DatosClasificacion["Ruta"];
+                $Filas[$i]=$DatosClasificacion;
+                $i=$i+1;
+            }
+            if($imgTotals==0){
+                exit('<div class="alert alert-danger mt-3"><h4 class="alert-heading"></h4><p>Aún no hay Imágenes para este producto.</p><hr><p class="mb-0"></p></div>');
+            }
+            $z=0;
+            $Titulo="IMAGENES";
+            $js="onclick=FormularioAgregarEditar(`2`)";
+            $Columnas[$z++]="<strong>Eliminar</strong>";
+          
+            $Columnas[$z++]="<strong>Imagen</strong>";
+            $Columnas[$z++]="<strong>Nombre</strong>";
+            $Columnas[$z++]="<strong>Tamaño</strong>";
+            
+            $Acciones["ID"]["Visible"]=0;
+            $Acciones["Ruta"]["Visible"]=0;
+                        
+            $Acciones["ID"]["html"]='<span data-img_id="@value" class="far fa-times-circle ts_remove_img_product" style="font-size:40px;color:red;cursor:pointer"></span>';
+            $Acciones["Ruta"]["html"]='<img src="@value" style="width:200px;"></a>';
+            $htmlTabla=$css->getHtmlTable("<strong>$Titulo</strong>", $Columnas, $Filas,$Acciones);
+            print($htmlTabla);
+            
+        break;//fin caso 5    
           
         
  }

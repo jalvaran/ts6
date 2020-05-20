@@ -75,7 +75,9 @@ class InventoryConstruct extends PageConstruct{
         $sql="SELECT * FROM productos_servicios WHERE ID = '$item_id'";        
         $query=$obCon->QueryExterno($sql, HOST, USER, PW, $this->dataClient["db"], "");
         $dataProducts=$obCon->FetchAssoc($query);
+        
         if($item_id==''){
+            
             $dataProducts["ID"]=$obCon->getUniqId();
             $dataProducts["Referencia"]=$dataProducts["ID"];
             $dataProducts["Nombre"]="";
@@ -88,7 +90,7 @@ class InventoryConstruct extends PageConstruct{
         }        
         $html='<div class="row">
                         
-                        <div class="col-lg-8">
+                        <div class="col-lg-6">
                             <div class="panel panel-default">
                                 <div class="panel-head">
                                     <div class="panel-title">
@@ -207,34 +209,53 @@ class InventoryConstruct extends PageConstruct{
                                         </div>
                                     
                                 </div>
+                            
+                            <div class="panel-footer text-right">       
+                                <button id="btn_cancel_save" data-route_view="'.$route_view.'" class="btn btn-default btn-pill"> - Cancelar - </button>
+                                <button id="btn_form_save" data-table_id="2" data-route_view="'.$route_view.'" class="btn btn-primary btn-pill"> - Guardar - </button>
+                            </div>
                             </div>
                         </div>
-                        
-                        <div class="col-lg-4">
-                            <div class="panel panel-default">
-                                <div class="panel-body">
-                                    <div class="user-avtar">
-                                        <img class="img-fluid" src="uploads/team-1.jpg" alt="">
-                                    </div>
-                                    <div class="user-details text-center pt-3">
-                                        <h2>John Doe</h2>
-                                        <p><i class="icon-envelope"></i> john@example.me</p>
-                                        <div>
-                                            <p class="d-inline-block"><i class="icon-user-following"></i> 799</p>
-                                            <p class="d-inline-block"><i class="icon-location-pin"></i> 3</p>
+                       
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="panel panel-default">
+                                            <div class="panel-body">
+
+                                                <div class="panel">
+                                                    <div class="panel-head">
+                                                        <h5 class="panel-title">Sube imágenes para el producto</h5>
+                                                    </div>
+                                                    <div class="panel-body">
+                                                        <form data-product_id="'.$dataProducts["ID"].'" action="/" class="dropzone dz-clickable" id="imgs_product"><div class="dz-default dz-message"><span><i class="icon-plus"></i>Arrastre las imágenes en ésta área<br> Suba sólo imágenes.</span></div></form>
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </div>
-                                        <ul class="mailbox-menu text-left pt-0">
-                                            <li><a href="#" class="active"><i class="icon-envelope-letter"></i> <span>Inbox (6)</span></a></li>
-                                            <li><a href="#"><i class="icon-paper-plane"></i> <span>Sent Email</span></a></li>
-                                            <li><a href="#"><i class="icon-trash"></i> <span>Trash</span></a></li>
-                                            <li><a href="#"><i class="icon-eye"></i> <span>Washlist</span></a></li>
-                                            <li><a href="#"><i class="icon-layers"></i> <span>Portfolio</span></a></li>
-                                            <li><a href="#"><i class="icon-screen-desktop"></i> <span>Profile</span></a></li>
-                                        </ul>
                                     </div>
-                                </div>
+                                    <div class="col-lg-12">
+                                        <div class="panel panel-default">
+                                            <div class="panel-head">
+                                                <h5 class="panel-title">Imágenes Agregadas al producto</h5>
+                                            </div>
+                                            <div class="panel-body">
+
+                                                <div id="divImagesProduct">
+                                                    
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>    
                             </div>
-                        </div>
+
+                            
+                            
+                       
                         
                     </div>';
         return($html);

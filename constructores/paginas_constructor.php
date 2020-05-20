@@ -1461,7 +1461,7 @@ class PageConstruct extends html_estruct_class{
                     $querySubMenu= $this->obCon->Query($sql);
                     while($dataSubMenu= $this->obCon->FetchAssoc($querySubMenu)){
                         $html.='<li>
-                                    <a class="ts-submenu-modules" id="submenu_ts6_'.$dataSubMenu["id"].'" data-page="1" data-scripts_menu="'.$dataSubMenu["scripts_menu"].'" data-route_view="'.$dataSubMenu["route_view"].'" data-submenu_name="'.$dataSubMenu["name_menu"].'" data-submenu_id="'.$dataSubMenu["id"].'" data-folder="'.$dataModule["folder"].'" data-action_view="'.$dataSubMenu["action_view"].'" ><span>'.$dataSubMenu["name_menu"].'</span></a>
+                                    <a class="ts-submenu-modules" id="submenu_ts6_'.$dataSubMenu["id"].'" data-page="1" data-scripts_menu="'.$dataSubMenu["scripts_menu"].'" data-route_view="'.$dataSubMenu["route_view"].'" data-submenu_name="'.$dataSubMenu["name_menu"].'" data-submenu_id="'.$dataSubMenu["id"].'" data-folder="'.$dataSubMenu["folder"].'" data-action_view="'.$dataSubMenu["action_view"].'" ><span>'.$dataSubMenu["name_menu"].'</span></a>
                                 </li>';
                     }
 
@@ -1612,6 +1612,89 @@ class PageConstruct extends html_estruct_class{
         return($html);
     }
     
+    
+    public function CrearTabla($id="",$type=1){
+        $class="table table-bordered table table-hover";
+        if($type==2){
+            $class="table table-striped";
+        }
+        if($type==3){
+            $class="table table-bordered";
+        }
+        if($id<>''){
+            $id="id=".$id;
+        }
+        return('<div  class="table-responsive"><table '.$id.'  class="'.$class.'" >');		
+    }
+    
+    function CierraColTabla(){
+            return('</td>');		
+    }
+    /**
+     * Cierra la tabla
+     */
+    function CerrarTabla(){
+        return('</table></div>');		
+    }
+    
+    
+    public function HeadTable() {
+        return('<thead>');
+    }
+    public function CheadTable() {
+        return('</thead>');
+    }
+        
+    
+    function FilaTabla($FontSize,$styles=''){
+            
+            
+        return('<tr class="odd gradeX" style="font-size:'.$FontSize.'px;'.$styles.'">');
+
+    }
+    
+    function CierraFilaTabla(){
+        return('</tr>');
+
+    }
+        
+    function ColTabla($Contenido,$ColSpan,$align="L",$moreStyles="",$th=0){
+            $Etiqueta="td";
+            if($th==1){
+                $Etiqueta="th";
+            }
+            if($align=="L"){
+              $align="left";  
+            }
+            if($align=="R"){
+              $align="right";  
+            }
+            if($align=="C"){
+              $align="center";  
+            }
+            return('<'.$Etiqueta.' colspan="'.$ColSpan.' " style="text-align:'.$align.';'.$moreStyles.'"   >'.$Contenido.'</'.$Etiqueta.'>');
+		
+	}
+        
+    public function getHtmlSelectBootstrap($id,$name,$values,$placeholder,$data,$style,$class="form-control") {
+        $html='
+                      <select id="'.$id.'" name="'.$name.'" class="'.$class.'" '.$data.' '.$style.'>
+                      ';
+        foreach ($values["values"] as $key => $value){
+            $sel="false";
+            $selected="";
+            if(isset($values["sel"][$key])){
+                $sel="true";
+                $selected=" selected = $sel ";
+            }
+            $html.='<option value="'.$value.'" '.$selected.'">';
+                $html.= ($values["text"][$key]);
+            $html.='</option>';
+        }
+        $html.='</select>';
+        return($html);
+    }
+        
 //Fin clase    
 }
 	

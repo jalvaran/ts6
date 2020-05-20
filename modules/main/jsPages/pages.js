@@ -344,6 +344,28 @@ function spinnerCreate(){
 }
 function add_events_virtual_shop(){
     
+    $("#searchProducts").unbind();      //Eliminar los eventos asociados a este elemento para no generar ciclos
+    $("#searchCategories").unbind();    //Eliminar los eventos asociados a este elemento para no generar ciclos
+    $("#buttonSearchProduct").unbind(); //Eliminar los eventos asociados a este elemento para no generar ciclos
+    
+    $("#searchProducts").keypress(function(e) {
+        var code = (e.keyCode ? e.keyCode : e.which);
+        if(code==13){
+            drawMoreProducts(1,$(this).data("local_id"));   
+        }
+    });
+    
+    
+    
+    $('#searchCategories').on('change',function () {
+        drawMoreProducts(1,$(this).data("local_id"));
+    });
+    
+    $('#buttonSearchProduct').on('click',function () {
+        drawMoreProducts(1,$(this).data("local_id"));
+    });
+    
+    
     $('.tsProductCard').on('click',function () {
         drawSliderProduct($(this).data("local_id"),$(this).data("dataproduct"));
     });
@@ -422,12 +444,17 @@ function CambieCantidad(idCaja,operation){
 $(document).ready(add_events_virtual_shop);
 
 $(document).ready(function(){
+    
+   
+    
     $("#searchProducts").keypress(function(e) {
         var code = (e.keyCode ? e.keyCode : e.which);
         if(code==13){
             drawMoreProducts(1,$(this).data("local_id"));   
         }
     });
+    
+    
     
     $('#searchCategories').on('change',function () {
         drawMoreProducts(1,$(this).data("local_id"));

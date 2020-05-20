@@ -36,6 +36,13 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
         include_once "general/buscadores/catalogo_municipios.search.php";
     });
     
+    $router->get('/pdf_order/(\w+)', function ($order_id) {
+        $_REQUEST["idDocumento"]=1;
+        $_REQUEST["ID"]=$order_id;
+        include_once "general/Consultas/PDF_Documentos.draw.php";
+        //include_once "general/Consultas/PDF_Documentos.draw.php?idDocumento=1&ID=".$order_id;
+    });
+    
     
      
      $router->post('/views', function () {       
@@ -48,6 +55,10 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
      
      $router->post('/viewsInventory', function () {       
         include_once "modules/inventory/views/inventory.draw.php";
+     });
+     
+     $router->post('/viewsOrders', function () {       
+        include_once "modules/orders/views/orders.draw.php";
      });
      
      $router->post('/processInventory', function () {       
@@ -65,6 +76,10 @@ if (php_sapi_name() === 'cli-server' && is_file($filename)) {
      
      $router->post('/processAdminShop', function () {       
         include_once "modules/admin/process/admin.process.php";
+     });
+     
+     $router->post('/processOrders', function () {       
+        include_once "modules/orders/process/orders.process.php";
      });
           
     $router->get('/(.*)', function ($url) {  

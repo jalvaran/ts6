@@ -34,10 +34,11 @@ if( !empty($_REQUEST["action"]) ){
             $obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
             
             print("OK;Registro Guardado");
-        break;//Fin caso 4
+        break;//Fin caso 1
         
-        case 5://Guardar o editar producto
+        case 2://Guardar o editar producto
             $idItem=$obCon->normalizar($_REQUEST["idItem"]);
+            $Datos["ID"]=$obCon->normalizar($_REQUEST["ID"]);
             $Datos["Estado"]=$obCon->normalizar($_REQUEST["Estado"]);
             $Datos["idClasificacion"]=$obCon->normalizar($_REQUEST["idClasificacion"]);
             $Datos["Referencia"]=$obCon->normalizar($_REQUEST["Referencia"]);
@@ -47,7 +48,7 @@ if( !empty($_REQUEST["action"]) ){
             $Datos["DescripcionLarga"]=$obCon->normalizar($_REQUEST["DescripcionLarga"]);
             $Datos["Orden"]=$obCon->normalizar($_REQUEST["Orden"]);
             foreach ($Datos as $key => $value) {
-                if($value=="" AND $key<>'Orden'){
+                if($value=="" AND $key<>'Orden' AND $key<>'DescripcionCorta' AND $key<>'DescripcionLarga'){
                     exit("E1;El campo $key no puede estar vacío;$key");
                 }
             }
@@ -63,24 +64,12 @@ if( !empty($_REQUEST["action"]) ){
                 exit($DatosSesion["Estado"].";".$DatosSesion["Mensaje"]);
             }
             
-            if($idItem==''){
-                if(empty($_FILES['ImagenProducto']['name'])){
-
-                    exit("E1;Debe Adjuntar una Imagen para el Producto;ImagenProducto");
-                }else{
-                    $info = new SplFileInfo($_FILES['ImagenProducto']['name']);
-                    $Extension=($info->getExtension());  
-                    if($Extension<>'jpg' and $Extension<>'png' and $Extension<>'jpeg'){
-                        exit("E1;Solo se permiten imagenes;ImagenProducto");
-                    }
-                } 
-            }
-            
             $idLocal=$_SESSION["idLocal"];
             $DatosLocal=$obCon->DevuelveValores("locales", "ID", $idLocal);
             $Tabla="productos_servicios";
+            
             if($idItem==''){
-                $Datos["ID"]=$obCon->getUniqId();
+                
                 $idProducto=$Datos["ID"];
                 $Datos["Created"]=date("Y-m-d H:i:s");
                 $sql=$obCon->getSQLInsert($Tabla, $Datos);
@@ -91,6 +80,18 @@ if( !empty($_REQUEST["action"]) ){
             }
             $obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
             
+            print("OK;Producto Creado");
+        break;//Fin caso 2
+    
+        case 3://Guarda la imagen de un producto
+            $path=$obCon->normalizar($_REQUEST["myPath"]);
+            
+            $idProducto=$obCon->normalizar($_REQUEST["product_id"]);
+            $idItem=$idProducto;
+            $idLocal=$_SESSION["idLocal"];
+            $DatosLocal=$obCon->DevuelveValores("locales", "ID", $idLocal);
+            $Tabla="productos_servicios";
+                
             
             $Extension="";
             if(!empty($_FILES['ImagenProducto']['name'])){
@@ -98,7 +99,7 @@ if( !empty($_REQUEST["action"]) ){
                 $info = new SplFileInfo($_FILES['ImagenProducto']['name']);
                 $Extension=($info->getExtension()); 
                 if($Extension<>'jpg' and $Extension<>'png' and $Extension<>'jpeg'){
-                    exit("E1;Solo se permiten imagenes;ImagenProducto");
+                    //exit("E1;Solo se permiten imagenes;ImagenProducto");
                 }
                 $Tamano=filesize($_FILES['ImagenProducto']['tmp_name']);
                 $DatosConfiguracion=$obCon->DevuelveValores("configuracion_general", "ID", 2001);
@@ -120,161 +121,14 @@ if( !empty($_REQUEST["action"]) ){
                 $idAdjunto=uniqid(true);
                 $destino=$carpeta.$idAdjunto.".".$Extension;
                 
-                
-                if($idItem<>''){
-                    $sql="SELECT ID,Ruta FROM productos_servicios_imagenes WHERE idProducto='$idItem' LIMIT 1";
-                    $Consulta=$obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
-                    $DatosValidacion=$obCon->FetchAssoc($Consulta);
-                    $idImagen=$DatosValidacion["ID"];
-                    if (file_exists($DatosValidacion["Ruta"])) {
-                        unlink($DatosValidacion["Ruta"]);
-                    }
-                    $sql="DELETE FROM productos_servicios_imagenes WHERE ID='$idImagen'";
-                    $obCon->QueryExterno($sql, HOST, USER, PW, $DatosLocal["db"], "");
-                    $idProducto=$idItem;
-                }
                 move_uploaded_file($_FILES['ImagenProducto']['tmp_name'],$destino);
                 $obCon->RegistreImagenProducto($DatosLocal["db"],$idProducto, $destino, $Tamano, $_FILES['ImagenProducto']['name'], $Extension, 1);
-            }
-            
-            print("OK;Registro Guardado");
-        break;//Fin caso 5
-    
-        case 6://Guarda el formulario del local
-            $idItem=$obCon->normalizar($_REQUEST["idItem"]);
-            $idEditar=$idItem;
-            $form_identify=$obCon->normalizar($_REQUEST["form_identify"]);
-            $Datos["idCategoria"]=$obCon->normalizar($_REQUEST["idCategoria"]);
-            $Datos["Nombre"]=$obCon->normalizar($_REQUEST["Nombre"]);
-            $Datos["Direccion"]=$obCon->normalizar($_REQUEST["Direccion"]);
-            $Datos["Telefono"]=$obCon->normalizar($_REQUEST["Telefono"]);
-            $Datos["Propietario"]=$obCon->normalizar($_REQUEST["Propietario"]);
-            $Datos["Tarifa"]=$obCon->normalizar($_REQUEST["Tarifa"]);
-            $Datos["Email"]=$obCon->normalizar($_REQUEST["Email"]);
-            $Datos["Password"]=$obCon->normalizar($_REQUEST["Password"]);
-            $Datos["Descripcion"]=$obCon->normalizar($_REQUEST["Descripcion"]);
-            $Datos["Orden"]=$obCon->normalizar($_REQUEST["Orden"]);
-            $Datos["Estado"]=$obCon->normalizar($_REQUEST["Estado"]);
-            
-            $Datos["Indicativo"]=$obCon->normalizar($_REQUEST["Indicativo"]);
-            $Datos["Whatsapp"]=$obCon->normalizar($_REQUEST["Whatsapp"]);
-            $Datos["idTelegram"]=$obCon->normalizar($_REQUEST["idTelegram"]);
-            $Datos["idCiudad"]=$obCon->normalizar($_REQUEST["idCiudad"]);
-            $Datos["theme_id"]=$obCon->normalizar($_REQUEST["theme_id"]);
-            $Datos["page_initial"]=$obCon->normalizar($_REQUEST["page_initial"]);
-            $Datos["header_class"]=$obCon->normalizar($_REQUEST["header_class"]);
-            $Datos["slider_class"]=$obCon->normalizar($_REQUEST["slider_class"]);
-            $Datos["keywords"]=$obCon->normalizar($_REQUEST["keywords"]);
-            $Datos["virtual_shop"]=$obCon->normalizar($_REQUEST["virtual_shop"]);
-            $Datos["UrlLocal"]=$obCon->normalizar($_REQUEST["UrlLocal"]);
-            $Datos["title_page"]=$obCon->normalizar($_REQUEST["title_page"]);
-            $Datos["Alcance"]=$obCon->normalizar($_REQUEST["Alcance"]);
-            
-            foreach ($Datos as $key => $value) {
-                if($value=="" AND $key<>'Orden' AND $key<>'keywords' AND $key<>'UrlLocal'){
-                    exit("E1;El campo $key no puede estar vacío;$key");
-                }
-            }
-            if(!is_numeric($Datos["Orden"]) or $Datos["Orden"]<0){
-                exit("E1;El campo Orden Debe ser un numero mayor o igual a cero;Orden");
-            }
-            if(!filter_var($Datos["Email"], FILTER_VALIDATE_EMAIL)){
-                exit("E1;El campo Email No contiene un Correo válido;Email");
-            }
-            $Token=$obCon->normalizar($_REQUEST["Token_user"]);
-            $DatosSesion=$obCon->VerificaSesion($Token);
-            if($DatosSesion["Estado"]=="E1"){               
-                exit($DatosSesion["Estado"].";".$DatosSesion["Mensaje"]);
-            }
-            $Logo="tmp/".$form_identify."/logo-header.png";
-            $FondoLocal="tmp/".$form_identify."/local-foto.png";
-            if($idItem==''){
-                if(!is_file($FondoLocal)){
-
-                    exit("E1;Debe Adjuntar una Imagen para el Local");
-                }
-            }
-            
-            //$idLocal=$_SESSION["idLocal"];
-            $DatosServidor["IP"]=HOST;
-            $DatosServidor["Usuario"]=USER;
-            $DatosServidor["Password"]=PW;
-            $DatosServidor["DataBase"]=DB;
-            $Tabla="locales";
-            if($idItem==''){
-                $sql="SELECT MAX(Orden) as Orden FROM locales";
-                $Consulta=$obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                $DatosLocal=$obCon->FetchAssoc($Consulta);
-                $idCategoria=$Datos["idCategoria"];
-                $sql="SELECT Icono,ColorIcono FROM catalogo_categorias WHERE id='$idCategoria'";
-                $Consulta=$obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                $DatosCategorias=$obCon->FetchAssoc($Consulta);
-                $Datos["Icono"]=$DatosCategorias["Icono"];
-                $Datos["ColorIcono"]=$DatosCategorias["ColorIcono"];
-                $Datos["Orden"]=$DatosLocal["Orden"]+1;
-                $Datos["Created"]=date("Y-m-d H:i:s");
-                $Datos["idUser"]=1;
-                $Datos["Estado"]=1;
-                $sql=$obCon->getSQLInsert($Tabla, $Datos);
-                $obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                $sql="SELECT MAX(ID) as ID FROM locales";
-                $Consulta=$obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                $DatosLocal=$obCon->FetchAssoc($Consulta);
-                $idLocal=$DatosLocal["ID"];
-                $db="ts_domi_$idLocal";
-                $sql="UPDATE locales set db='$db' WHERE ID='$idLocal'";
-                $obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
+                exit("OK;Imagen Archivada");
             }else{
-                $sql=$obCon->getSQLUpdate($Tabla, $Datos);
-                $sql.=" WHERE ID='$idEditar'";
-                $obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                $idLocal=$idEditar;
+                exit("E1;no se recibió el archivo");
             }
-            $Extension="";
-            $DatosConfiguracion=$obCon->DevuelveValores("configuracion_general", "ID", 2000);
-                
-            $carpeta=$DatosConfiguracion["Valor"];
-            if(is_file($FondoLocal)){
-                
-                $info = new SplFileInfo($FondoLocal);
-                $Extension=($info->getExtension());  
-                $Tamano=filesize($FondoLocal);
-                
-                if (!file_exists($carpeta)) {
-                    mkdir($carpeta, 0777);
-                }
-                $carpeta=$DatosConfiguracion["Valor"].$idLocal."/";
-                if (!file_exists($carpeta)) {
-                    mkdir($carpeta, 0777);
-                }
-                
-                opendir($carpeta);
-                $idAdjunto=uniqid(true);
-                $destino=$carpeta.$idAdjunto.".".$Extension;
-                
-                
-                if($idItem<>''){
-                    $sql="SELECT Ruta FROM locales_imagenes WHERE idLocal='$idLocal' LIMIT 1";
-                    $Consulta=$obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                    $DatosValidacion=$obCon->FetchAssoc($Consulta);
-                    if (file_exists($DatosValidacion["Ruta"])) {
-                        unlink($DatosValidacion["Ruta"]);
-                    }
-                    $sql="DELETE FROM locales_imagenes WHERE idLocal='$idLocal'";
-                    $obCon->QueryExterno($sql, $DatosServidor["IP"], $DatosServidor["Usuario"], $DatosServidor["Password"], $DatosServidor["DataBase"], "");
-                }
-                
-                rename($FondoLocal, $destino);
-                
-                //unlink("tmp/$form_identify");
-                $obCon->RegistreFondoLocal($idLocal, $destino, $Tamano, $FondoLocal, $Extension, 1);
-            }
-            if(is_file($Logo)){
-                rename($Logo, $carpeta.$idLocal."/logo-header.png");
-            }
-            print("OK;Registro Guardado Correctamente;$idEditar");
             
-        break;//Fin caso 6  
+        break;//Fin caso 3
         
         case 7://Guardar la foto de un producto
             $Token=$obCon->normalizar($_REQUEST["Token_user"]);
